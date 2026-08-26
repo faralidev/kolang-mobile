@@ -1,0 +1,10 @@
+{
+  "name": "ویرایشگر کلنگ",
+  "short_name": "کلنگ",
+  "description": "ویرایشگر کلنگ در مرورگر",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#1e1e2e",
+  "theme_color": "#1e1e2e",
+  "icons": []
+}

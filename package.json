@@ -1,0 +1,36 @@
+{
+  "name": "kolang-mobile",
+  "version": "0.0.1",
+  "description": "ویرایشگر کلنگ — یک کدبیس برای وب، مک، ویندوز، iOS و اندروید",
+  "scripts": {
+    "android": "react-native run-android",
+    "ios": "react-native run-ios",
+    "macos": "react-native run-macos",
+    "windows": "react-native run-windows",
+    "web": "vite",
+    "start": "react-native start",
+    "lint": "eslint ."
+  },
+  "dependencies": {
+    "react": "^18.3.1",
+    "react-native": "^0.76.0",
+    "react-native-macos": "^0.76.0",
+    "react-native-windows": "^0.76.0",
+    "react-native-web": "^0.19.0",
+    "react-native-webview": "^13.12.0",
+    "@kolang/interpreter": "^0.0.1",
+    "@kolang/grammar": "^0.0.1"
+  },
+  "devDependencies": {
+    "@babel/core": "^7.25.0",
+    "@react-native/babel-preset": "^0.76.0",
+    "@react-native/metro-config": "^0.76.0",
+    "@react-native/eslint-config": "^0.76.0",
+    "@vitejs/plugin-react": "^4.3.0",
+    "eslint": "^9.0.0",
+    "vite": "^6.0.0"
+  },
+  "license": "MIT",
+  "repository": "https://github.com/faralidev/kolang-mobile",
+  "keywords": ["kolang", "کلنگ", "react-native", "web", "ios", "android", "macos", "windows", "pwa", "persian", "ide", "codemirror"]
+}
