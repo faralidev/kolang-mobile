@@ -1,7 +1,6 @@
-// App.js — ویرایشگر یکپارچهٔ کلنگ
-// یک کدبیس React Native → iOS، اندروید، مک، ویندوز و وب (PWA). CodeMirror داخل
-// WebView رندر می‌شود و مفسر WASM هم در همان WebView اجرا می‌شود (روی وب
-// react-native-webview به‌صورت iframe است — بهینه‌سازی بعداً).
+// App.js — ویرایشگر کلنگ برای موبایل
+// React Native → iOS و اندروید. CodeMirror داخل WebView رندر می‌شود و
+// مفسر WASM هم در همان WebView اجرا می‌شود (WebView از WebAssembly پشتیبانی می‌کند).
 
 import React, { useCallback, useRef, useState } from 'react'
 import { Pressable, StatusBar, StyleSheet, Text, View } from 'react-native'
