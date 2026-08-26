@@ -1,0 +1,13 @@
+version: 2
+updates:
+  # Bump @kolang/interpreter when kolang-wasm publishes to npm
+  - package-ecosystem: npm
+    directory: /
+    schedule:
+      interval: weekly
+    allow:
+      - dependency-name: "@kolang/interpreter"
+      - dependency-name: "@kolang/grammar"
+    commit-message:
+      prefix: "deps:"
+    open-pull-requests-limit: 5
