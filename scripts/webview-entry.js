@@ -357,13 +357,8 @@ async function boot() {
         themeCompartment.of(editorTheme),
         highlightCompartment.of(syntaxHighlighting(kolangHighlight)),
         keymap.of([
-          // میان‌برهای سفارشی باید قبل از defaultKeymap باشند تا اولویت داشته باشند.
-          // defaultKeymap شامل Mod-Enter (insertBlankLine) و Enter+shift
-          // (insertNewlineAndIndent) است که میان‌برهای ما را می‌بلعند.
-          { key: 'Mod-Enter', run: () => { runKolangNow(); return true } },
-          { key: 'Shift-Enter', run: () => { runKolangNow(); return true } },
-          { key: 'Ctrl-ArrowLeft', run: () => { prevSection(); return true } },
-          { key: 'Ctrl-ArrowRight', run: () => { nextSection(); return true } },
+          // میان‌برهای سفارشی از طریق window listener (capture phase) هندل می‌شوند
+          // تا قبل از CM6 اجرا شوند. اینجا فقط keymapهای پیش‌فرض می‌مانند.
           ...defaultKeymap,
           ...historyKeymap,
           ...searchKeymap,
@@ -392,6 +387,10 @@ async function boot() {
   // سیم‌کشی دکمه‌ها
   const runBtn = document.getElementById('run-btn')
   if (runBtn) runBtn.addEventListener('click', () => runKolangNow())
+
+  // دکمهٔ شناور اجرا
+  const runFab = document.getElementById('run-fab')
+  if (runFab) runFab.addEventListener('click', () => runKolangNow())
 
   // ─── مدیریت تم (تیره/روشن) ───────────────────────────────────────────────
   // روی بارگذاری، تم سیستم عامل را تشخیص می‌دهد. کاربر می‌تواند با دکمهٔ ☀️/🌙
@@ -461,48 +460,117 @@ async function boot() {
     // مرورگر قدیمی — بی‌خیال
   }
 
-  // ─── باز کردن، ذخیره، و فایل جدید ────────────────────────────────────────
-  // از API مرورگر (FileReader و Blob download) استفاده می‌شود که هم در
-  // WebView ری‌اکت‌نیتیو و هم در مرورگر معمولی (GitHub Pages) کار می‌کند.
+  // ─── باز کردن، ذخیره، و فایل جدید (پشتیبانی چند تب) ──────────────────────
 
-  let currentFilename = 'برنامه.kolang'
-  const tabNameEl = document.getElementById('tab-name')
+  let tabs = [{ id: 0, filename: 'برنامه.kolang', content: '' }]
+  let activeTabId = 0
+  let tabIdCounter = 1
 
-  // اطمینان از وجود پسوند .kolang
+  const tabsContainer = document.getElementById('tabs-container')
+
   function ensureKolangExtension(name) {
     if (!name) return 'برنامه.kolang'
     return name.endsWith('.kolang') ? name : name + '.kolang'
   }
 
-  function updateTabName() {
-    if (tabNameEl) tabNameEl.textContent = currentFilename
+  function getActiveTab() {
+    return tabs.find(t => t.id === activeTabId)
   }
 
-  // فایل جدید: 📄 ویرایشگر را خالی می‌کند و نام را به پیش‌فرض برمی‌گرداند
+  function renderTabs() {
+    if (!tabsContainer) return
+    tabsContainer.innerHTML = ''
+    tabs.forEach(tab => {
+      const item = document.createElement('div')
+      item.className = 'tab-item' + (tab.id === activeTabId ? ' active' : '')
+
+      const icon = document.createElement('span')
+      icon.className = 'tab-icon'
+      icon.textContent = '📄'
+      item.appendChild(icon)
+
+      const name = document.createElement('span')
+      name.className = 'tab-name'
+      name.textContent = tab.filename
+      name.addEventListener('click', () => switchTab(tab.id))
+      item.appendChild(name)
+
+      if (tabs.length > 1) {
+        const close = document.createElement('button')
+        close.className = 'tab-close'
+        close.textContent = '✕'
+        close.addEventListener('click', (e) => {
+          e.stopPropagation()
+          closeTab(tab.id)
+        })
+        item.appendChild(close)
+      }
+
+      tabsContainer.appendChild(item)
+    })
+  }
+
+  function switchTab(id) {
+    // ذخیرهٔ محتوای تب فعلی
+    const current = getActiveTab()
+    if (current && editor) {
+      current.content = editor.state.doc.toString()
+    }
+    activeTabId = id
+    const tab = tabs.find(t => t.id === id)
+    if (tab && editor) {
+      editor.dispatch({
+        changes: { from: 0, to: editor.state.doc.length, insert: tab.content },
+      })
+    }
+    renderTabs()
+    post({ type: 'file', action: 'switch', filename: tab ? tab.filename : '' })
+  }
+
+  function closeTab(id) {
+    const idx = tabs.findIndex(t => t.id === id)
+    if (idx < 0) return
+    tabs.splice(idx, 1)
+    if (tabs.length === 0) {
+      // همیشه حداقل یک تب
+      tabs.push({ id: tabIdCounter++, filename: 'برنامه.kolang', content: '' })
+    }
+    if (activeTabId === id) {
+      const newIdx = Math.min(idx, tabs.length - 1)
+      activeTabId = tabs[newIdx].id
+      const tab = tabs[newIdx]
+      if (editor) {
+        editor.dispatch({
+          changes: { from: 0, to: editor.state.doc.length, insert: tab.content },
+        })
+      }
+    }
+    renderTabs()
+  }
+
+  function newTab() {
+    const id = tabIdCounter++
+    tabs.push({ id, filename: `برنامه-${id}.kolang`, content: '' })
+    // ذخیرهٔ محتوای فعلی قبل از تعویض
+    const current = getActiveTab()
+    if (current && editor) {
+      current.content = editor.state.doc.toString()
+    }
+    activeTabId = id
+    if (editor) {
+      editor.dispatch({ changes: { from: 0, to: editor.state.doc.length, insert: '' } })
+    }
+    renderTabs()
+    post({ type: 'file', action: 'new', filename: `برنامه-${id}.kolang` })
+  }
+
+  // فایل جدید: 📄 یک تب جدید می‌سازد
   const newBtn = document.getElementById('new-btn')
   if (newBtn) {
-    newBtn.addEventListener('click', () => {
-      if (editor) {
-        editor.dispatch({ changes: { from: 0, to: editor.state.doc.length, insert: '' } })
-      }
-      currentFilename = 'برنامه.kolang'
-      updateTabName()
-      post({ type: 'file', action: 'new', filename: currentFilename })
-    })
+    newBtn.addEventListener('click', newTab)
   }
 
-  // کلیک روی نام تب → تغییر نام با prompt
-  if (tabNameEl) {
-    tabNameEl.addEventListener('click', () => {
-      const newName = prompt('نام فایل جدید:', currentFilename)
-      if (newName && newName.trim()) {
-        currentFilename = ensureKolangExtension(newName.trim())
-        updateTabName()
-      }
-    })
-  }
-
-  // باز کردن فایل: دکمهٔ 📂 ورودی مخفی file-input را فعال می‌کند
+  // باز کردن فایل: 📂 یک تب جدید با محتوای فایل می‌سازد
   const openBtn = document.getElementById('open-btn')
   const fileInput = document.getElementById('file-input')
   if (openBtn && fileInput) {
@@ -512,14 +580,21 @@ async function boot() {
       if (!file) return
       try {
         const content = await file.text()
+        const id = tabIdCounter++
+        tabs.push({ id, filename: ensureKolangExtension(file.name), content })
+        // ذخیرهٔ محتوای فعلی قبل از تعویض
+        const current = getActiveTab()
+        if (current && editor) {
+          current.content = editor.state.doc.toString()
+        }
+        activeTabId = id
         if (editor) {
           editor.dispatch({
             changes: { from: 0, to: editor.state.doc.length, insert: content },
           })
         }
-        currentFilename = ensureKolangExtension(file.name)
-        updateTabName()
-        post({ type: 'file', action: 'open', filename: currentFilename })
+        renderTabs()
+        post({ type: 'file', action: 'open', filename: ensureKolangExtension(file.name) })
       } catch (err) {
         post({ type: 'error', detail: String((err && err.message) || err) })
       }
@@ -527,24 +602,39 @@ async function boot() {
     })
   }
 
-  // ذخیره فایل: دکمهٔ 💾 یک Blob با محتوای ویرایشگر می‌سازد و آن را دانلود می‌کند
+  // ذخیره فایل: 💾 محتوای تب فعلی را دانلود می‌کند
   const saveBtn = document.getElementById('save-btn')
   if (saveBtn) {
     saveBtn.addEventListener('click', () => {
       if (!editor) return
+      const tab = getActiveTab()
       const content = editor.state.doc.toString()
+      if (tab) tab.content = content
+      const filename = ensureKolangExtension(tab ? tab.filename : 'برنامه.kolang')
       const blob = new Blob([content], { type: 'text/plain;charset=utf-8' })
       const url = URL.createObjectURL(blob)
       const a = document.createElement('a')
       a.href = url
-      a.download = ensureKolangExtension(currentFilename)
+      a.download = filename
       document.body.appendChild(a)
       a.click()
       document.body.removeChild(a)
       setTimeout(() => URL.revokeObjectURL(url), 1000)
-      post({ type: 'file', action: 'save', filename: a.download })
+      post({ type: 'file', action: 'save', filename })
     })
   }
+
+  // به‌روزرسانی محتوای تب فعلی هنگام تایپ
+  if (editor) {
+    editor.on('update', (update) => {
+      if (update.docChanged) {
+        const tab = getActiveTab()
+        if (tab) tab.content = update.state.doc.toString()
+      }
+    })
+  }
+
+  renderTabs()
 
   // ─── پنل راهنما (راست، push—not overlay) ─────────────────────────────────
   // پنل از سمت راست باز می‌شود و ویرایشگر/خروجی را به چپ هل می‌دهد.
@@ -619,8 +709,13 @@ async function boot() {
         changes: { from: 0, to: editor.state.doc.length, insert: section.code },
       })
     }
-    currentFilename = section.filename
-    updateTabName()
+    // کد بخش در تب فعلی بارگذاری می‌شود (تب جدید ساخته نمی‌شود)
+    const tab = getActiveTab()
+    if (tab) {
+      tab.filename = section.filename
+      tab.content = section.code
+      renderTabs()
+    }
     activeSectionIndex = index
     renderHelpSections()
     updateNavButtons()
@@ -646,6 +741,15 @@ async function boot() {
 
   if (prevBtn) prevBtn.addEventListener('click', prevSection)
   if (nextBtn) nextBtn.addEventListener('click', nextSection)
+
+  // دکمهٔ toggle ناوبری (Task 1): ناوبری قبلی/بعدی به‌صورت پیش‌فرض مخفی است
+  const navToggle = document.getElementById('nav-toggle')
+  const sidebarNav = sidebarEl ? sidebarEl.querySelector('.sidebar-nav') : null
+  if (navToggle && sidebarNav) {
+    navToggle.addEventListener('click', () => {
+      sidebarNav.classList.toggle('show-nav')
+    })
+  }
 
   // ─── ساخت بخش‌های راهنما ─────────────────────────────────────────────────
   function renderHelpSections() {
@@ -714,25 +818,36 @@ async function boot() {
     updatePanelMargin()
   })
 
-  // ─── میان‌برهای کیبورد (سطح پنجره — حتی وقتی ویرایشگر فوکوس ندارد) ────────
-  // Mod-Enter / Shift+Enter → اجرا. Ctrl+←/→ → بخش قبلی/بعدی.
+  // ─── میان‌برهای کیبورد (سطح پنجره، فاز capture — قبل از CM6) ──────────────
+  // از فاز capture استفاده می‌کنیم تا قبل از CodeMirror اجرا شود و میان‌برها
+  // را ببلعد. Mod = Ctrl روی ویندوز/لینوکس، Cmd روی مک.
   window.addEventListener('keydown', (e) => {
-    if (((e.ctrlKey || e.metaKey) && e.key === 'Enter') || (e.shiftKey && e.key === 'Enter')) {
+    const isMod = e.ctrlKey || e.metaKey
+
+    // اجرا: Ctrl/Cmd+Enter یا Shift+Enter
+    if ((isMod && e.key === 'Enter') || (e.shiftKey && e.key === 'Enter')) {
       e.preventDefault()
+      e.stopPropagation()
       runKolangNow()
-      return
+      return false
     }
-    if (e.ctrlKey && (e.key === 'ArrowLeft' || e.key === 'Left')) {
+
+    // بخش قبلی: Ctrl/Cmd+ArrowLeft
+    if (isMod && (e.key === 'ArrowLeft' || e.key === 'Left')) {
       e.preventDefault()
+      e.stopPropagation()
       prevSection()
-      return
+      return false
     }
-    if (e.ctrlKey && (e.key === 'ArrowRight' || e.key === 'Right')) {
+
+    // بخش بعدی: Ctrl/Cmd+ArrowRight
+    if (isMod && (e.key === 'ArrowRight' || e.key === 'Right')) {
       e.preventDefault()
+      e.stopPropagation()
       nextSection()
-      return
+      return false
     }
-  })
+  }, true) // ← capture phase
 }
 
 boot()

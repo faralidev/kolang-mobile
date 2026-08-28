@@ -51,16 +51,9 @@ function buildEditorHTML(bundleJS) {
     border-bottom:1px solid var(--surface0);
     flex-shrink:0;
     direction:ltr;
-    position:relative;
     transition:margin-right 0.25s ease;
   }
-  .topbar-title{
-    color:var(--text);font-weight:700;font-size:15px;
-    white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
-    direction:rtl;
-    position:absolute;left:50%;transform:translateX(-50%);
-    pointer-events:none;
-  }
+  .topbar-spacer{flex:1}
   .topbar-btn{
     display:flex;align-items:center;justify-content:center;gap:4px;
     min-height:40px;min-width:40px;
@@ -72,35 +65,68 @@ function buildEditorHTML(bundleJS) {
   .btn-menu:active{background:var(--surface1)}
   .btn-file{background:var(--surface0);color:var(--text);font-size:16px;padding:8px 10px}
   .btn-file:active{background:var(--surface1)}
-  .btn-run{background:var(--green);color:var(--run-text)}
-  .btn-run:active{opacity:0.8}
   .btn-theme{background:transparent;border:none;font-size:18px;cursor:pointer;padding:4px 8px;min-width:36px;min-height:36px;border-radius:8px}
   .btn-theme:active{background:var(--surface0)}
 
-  /* ─── نوار تب (نام فایل فعلی) ─── */
+  /* ─── دکمهٔ شناور اجرا (کنار پنل راست) ─── */
+  #run-fab{
+    position:fixed;
+    bottom:calc(45vh + 16px);
+    right:16px;
+    z-index:500;
+    background:var(--green);color:var(--run-text);
+    border:none;border-radius:50%;
+    width:56px;height:56px;
+    font-size:22px;cursor:pointer;
+    display:flex;align-items:center;justify-content:center;
+    transition:right 0.25s ease,bottom 0.25s ease;
+  }
+  #run-fab:active{opacity:0.8;transform:scale(0.95)}
+
+  /* ─── نوار تب ─── */
   #tab-bar{
-    display:flex;align-items:center;
+    display:flex;align-items:center;gap:6px;
     padding:4px 12px;
     background:var(--crust);
     border-bottom:1px solid var(--surface0);
     flex-shrink:0;
+    overflow-x:auto;overflow-y:hidden;
+    -webkit-overflow-scrolling:touch;
+    scrollbar-width:none;
     transition:margin-right 0.25s ease,background 0.2s ease;
+  }
+  #tab-bar::-webkit-scrollbar{display:none}
+  .app-title{
+    color:var(--text);font-weight:700;font-size:13px;
+    white-space:nowrap;flex-shrink:0;padding:0 8px;
+    direction:rtl;
   }
   .tab-item{
     display:flex;align-items:center;gap:6px;
-    padding:6px 12px;
+    padding:6px 10px;
     background:var(--mantle);
     border-radius:8px 8px 0 0;
     color:var(--text);font-size:12px;
-    cursor:pointer;
-    max-width:200px;
+    cursor:pointer;flex-shrink:0;
+    max-width:180px;
+    border-top:2px solid transparent;
+  }
+  .tab-item.active{
+    background:var(--surface0);
+    border-top-color:var(--mauve);
   }
   .tab-name{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
   .tab-icon{font-size:13px}
+  .tab-close{
+    background:none;border:none;color:var(--overlay0);
+    font-size:14px;cursor:pointer;padding:0 2px;
+    min-width:20px;min-height:20px;border-radius:4px;
+    display:flex;align-items:center;justify-content:center;
+  }
+  .tab-close:active{background:var(--surface1)}
 
   /* ─── پنل راهنما ─── */
   /* گوشی: bottom sheet — از پایین بالا می‌آید (۷۰٪ ارتفاع) */
-  /* پیش‌فرض visibility:hidden تا قبل از آماده‌شدن JS فلاش نزند */
   #sidebar{
     position:fixed;bottom:0;left:0;right:0;top:auto;
     height:70vh;width:100%;
@@ -130,15 +156,15 @@ function buildEditorHTML(bundleJS) {
   }
 
   :root{--panel-w:0px}
-  /* فقط روی تبلت margin-right اعمال می‌شود (push). روی گوشی full-screen است. */
   @media (min-width:768px){
     body.sidebar-open .topbar,
     body.sidebar-open #tab-bar,
     body.sidebar-open #editor,
-    body.sidebar-open #output-panel{margin-right:var(--panel-w)}
+    body.sidebar-open #output-panel,
+    body.sidebar-open #run-fab{margin-right:var(--panel-w)}
   }
 
-  /* نوار ناوبری بالا (قبلی/بعدی/گام) */
+  /* نوار ناوبری بالا */
   .sidebar-nav{
     display:flex;align-items:center;gap:6px;
     padding:10px 12px;
@@ -149,6 +175,17 @@ function buildEditorHTML(bundleJS) {
     color:var(--text);font-weight:700;font-size:14px;
     flex:1;white-space:nowrap;
   }
+  .nav-toggle-btn{
+    background:var(--surface0);color:var(--text);border:none;
+    border-radius:8px;padding:6px 10px;
+    font-family:inherit;font-size:13px;font-weight:600;
+    cursor:pointer;min-height:32px;min-width:32px;
+  }
+  .nav-toggle-btn:active{background:var(--surface1)}
+  .nav-controls{
+    display:none;align-items:center;gap:6px;
+  }
+  .sidebar-nav.show-nav .nav-controls{display:flex}
   .nav-btn{
     background:var(--surface1);color:var(--text);border:none;
     border-radius:8px;padding:6px 10px;
@@ -168,7 +205,6 @@ function buildEditorHTML(bundleJS) {
   }
   .sidebar-close:active{background:var(--surface0)}
 
-  /* روی تبلت: ☰ و ✕ پنهان می‌شوند (پنل همیشه باز است) */
   @media (min-width:768px){
     #sidebar-toggle-btn{display:none}
     #sidebar .sidebar-close{display:none}
@@ -245,38 +281,41 @@ function buildEditorHTML(bundleJS) {
 </head>
 <body>
 
-  <!-- نوار بالا: دکمهٔ تم و عنوان در چپ، دکمه‌ها در راست -->
+  <!-- نوار بالا: ☀️ در چپ، دکمه‌ها در راست (عنوان در نوار تب) -->
   <div class="topbar">
     <button id="theme-toggle-btn" class="btn-theme" title="تغییر تم">☀️</button>
-    <span class="topbar-title">ویرایشگر کلنگ</span>
+    <span class="topbar-spacer"></span>
     <button id="new-btn" class="topbar-btn btn-file" title="فایل جدید">📄</button>
     <button id="open-btn" class="topbar-btn btn-file" title="باز کردن فایل">📂</button>
     <button id="save-btn" class="topbar-btn btn-file" title="ذخیره فایل">💾</button>
-    <button id="run-btn" class="topbar-btn btn-run">▶ اجرا</button>
     <button id="sidebar-toggle-btn" class="topbar-btn btn-menu" title="راهنما">☰</button>
   </div>
 
-  <!-- نوار تب (نام فایل) -->
+  <!-- نوار تب: عنوان برنامه + تب‌های فایل -->
   <div id="tab-bar">
-    <div class="tab-item">
-      <span class="tab-icon">📄</span>
-      <span class="tab-name" id="tab-name">برنامه.kolang</span>
-    </div>
+    <span class="app-title">ویرایشگر کلنگ</span>
+    <div id="tabs-container" style="display:flex;gap:6px;align-items:center"></div>
   </div>
 
-  <!-- پنل راهنما (روی گوشی: تمام‌صفحه، روی تبلت: push از راست) -->
+  <!-- پنل راهنما -->
   <div id="sidebar">
     <div class="sidebar-nav">
       <span class="sidebar-nav-title">راهنما</span>
-      <button id="prev-btn" class="nav-btn" title="قبلی (Ctrl+→)">→ قبلی</button>
-      <span id="nav-progress" class="nav-progress">گام ۱ از ۱۹</span>
-      <button id="next-btn" class="nav-btn" title="بعدی (Ctrl+←)">بعدی ←</button>
+      <button id="nav-toggle" class="nav-toggle-btn" title="نمایش ناوبری">⇄</button>
+      <div class="nav-controls">
+        <button id="prev-btn" class="nav-btn" title="قبلی (Ctrl+→)">→ قبلی</button>
+        <span id="nav-progress" class="nav-progress">گام ۱ از ۱۹</span>
+        <button id="next-btn" class="nav-btn" title="بعدی (Ctrl+←)">بعدی ←</button>
+      </div>
       <button id="sidebar-close" class="sidebar-close">✕</button>
     </div>
     <div id="help-list"></div>
   </div>
 
-  <!-- ورودی مخفی فایل (برای باز کردن) -->
+  <!-- دکمهٔ شناور اجرا -->
+  <button id="run-fab" title="اجرا (Ctrl/Cmd+Enter)">▶</button>
+
+  <!-- ورودی مخفی فایل -->
   <input type="file" id="file-input" accept=".kolang,.txt,.kl" style="display:none" />
 
   <!-- ویرایشگر -->
