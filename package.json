@@ -1,6 +1,6 @@
 {
   "name": "kolang-mobile",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "ویرایشگر کلنگ — React Native برای iOS و اندروید (CodeMirror + WASM در WebView)",
   "scripts": {
     "android": "react-native run-android",
