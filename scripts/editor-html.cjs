@@ -195,12 +195,13 @@ function buildEditorHTML(bundleJS) {
     #sidebar .sidebar-close{display:none}
   }
 
-  /* ─── بخش راهنمای فعلی (همیشهvisible) ─── */
+  /* ─── بخش راهنمای فعلی (همیشهvisible، مگر وقتی فهرست نمایش داده شود) ─── */
   #help-current{
     flex-shrink:0;
     padding:14px 16px;
     border-bottom:1px solid var(--surface0);
   }
+  #sidebar.show-list #help-current{display:none}
   #help-current .help-current-title{
     color:var(--mauve);font-size:15px;font-weight:700;
     margin-bottom:10px;
