@@ -65,23 +65,10 @@ function buildEditorHTML(bundleJS) {
   .btn-menu:active{background:var(--surface1)}
   .btn-file{background:var(--surface0);color:var(--text);font-size:16px;padding:8px 10px}
   .btn-file:active{background:var(--surface1)}
+  .btn-run{background:var(--green);color:var(--run-text)}
+  .btn-run:active{opacity:0.8}
   .btn-theme{background:transparent;border:none;font-size:18px;cursor:pointer;padding:4px 8px;min-width:36px;min-height:36px;border-radius:8px}
   .btn-theme:active{background:var(--surface0)}
-
-  /* ─── دکمهٔ شناور اجرا (کنار پنل راست) ─── */
-  #run-fab{
-    position:fixed;
-    bottom:calc(45vh + 16px);
-    right:16px;
-    z-index:500;
-    background:var(--green);color:var(--run-text);
-    border:none;border-radius:50%;
-    width:56px;height:56px;
-    font-size:22px;cursor:pointer;
-    display:flex;align-items:center;justify-content:center;
-    transition:right 0.25s ease,bottom 0.25s ease;
-  }
-  #run-fab:active{opacity:0.8;transform:scale(0.95)}
 
   /* ─── نوار تب ─── */
   #tab-bar{
@@ -160,8 +147,7 @@ function buildEditorHTML(bundleJS) {
     body.sidebar-open .topbar,
     body.sidebar-open #tab-bar,
     body.sidebar-open #editor,
-    body.sidebar-open #output-panel,
-    body.sidebar-open #run-fab{margin-right:var(--panel-w)}
+    body.sidebar-open #output-panel{margin-right:var(--panel-w)}
   }
 
   /* نوار ناوبری بالا */
@@ -288,6 +274,7 @@ function buildEditorHTML(bundleJS) {
     <button id="new-btn" class="topbar-btn btn-file" title="فایل جدید">📄</button>
     <button id="open-btn" class="topbar-btn btn-file" title="باز کردن فایل">📂</button>
     <button id="save-btn" class="topbar-btn btn-file" title="ذخیره فایل">💾</button>
+    <button id="run-btn" class="topbar-btn btn-run">▶ اجرا</button>
     <button id="sidebar-toggle-btn" class="topbar-btn btn-menu" title="راهنما">☰</button>
   </div>
 
@@ -311,9 +298,6 @@ function buildEditorHTML(bundleJS) {
     </div>
     <div id="help-list"></div>
   </div>
-
-  <!-- دکمهٔ شناور اجرا -->
-  <button id="run-fab" title="اجرا (Ctrl/Cmd+Enter)">▶</button>
 
   <!-- ورودی مخفی فایل -->
   <input type="file" id="file-input" accept=".kolang,.txt,.kl" style="display:none" />

@@ -342,6 +342,15 @@ async function boot() {
   const editorEl = document.getElementById('editor')
   if (!editorEl) return
 
+  // متغیرهای چند تب — قبل از ساخت ویرایشگر اعلان می‌شوند تا updateListener
+  // بتواند به آن‌ها دسترسی داشته باشد.
+  let tabs = [{ id: 0, filename: 'برنامه.kolang', content: '' }]
+  let activeTabId = 0
+  let tabIdCounter = 1
+  function getActiveTab() {
+    return tabs.find(t => t.id === activeTabId)
+  }
+
   editor = new EditorView({
     parent: editorEl,
     state: EditorState.create({
@@ -368,6 +377,9 @@ async function boot() {
         EditorView.updateListener.of((update) => {
           if (update.docChanged) {
             post({ type: 'code', text: update.state.doc.toString() })
+            // همگام‌سازی محتوای تب فعلی
+            const tab = getActiveTab()
+            if (tab) tab.content = update.state.doc.toString()
           }
         }),
       ],
@@ -387,10 +399,6 @@ async function boot() {
   // سیم‌کشی دکمه‌ها
   const runBtn = document.getElementById('run-btn')
   if (runBtn) runBtn.addEventListener('click', () => runKolangNow())
-
-  // دکمهٔ شناور اجرا
-  const runFab = document.getElementById('run-fab')
-  if (runFab) runFab.addEventListener('click', () => runKolangNow())
 
   // ─── مدیریت تم (تیره/روشن) ───────────────────────────────────────────────
   // روی بارگذاری، تم سیستم عامل را تشخیص می‌دهد. کاربر می‌تواند با دکمهٔ ☀️/🌙
@@ -461,20 +469,13 @@ async function boot() {
   }
 
   // ─── باز کردن، ذخیره، و فایل جدید (پشتیبانی چند تب) ──────────────────────
-
-  let tabs = [{ id: 0, filename: 'برنامه.kolang', content: '' }]
-  let activeTabId = 0
-  let tabIdCounter = 1
+  // (متغیرهای tabs/activeTabId/tabIdCounter/getActiveTab در ابتدای boot اعلان شدند)
 
   const tabsContainer = document.getElementById('tabs-container')
 
   function ensureKolangExtension(name) {
     if (!name) return 'برنامه.kolang'
     return name.endsWith('.kolang') ? name : name + '.kolang'
-  }
-
-  function getActiveTab() {
-    return tabs.find(t => t.id === activeTabId)
   }
 
   function renderTabs() {
@@ -624,15 +625,7 @@ async function boot() {
     })
   }
 
-  // به‌روزرسانی محتوای تب فعلی هنگام تایپ
-  if (editor) {
-    editor.on('update', (update) => {
-      if (update.docChanged) {
-        const tab = getActiveTab()
-        if (tab) tab.content = update.state.doc.toString()
-      }
-    })
-  }
+  // به‌روزرسانی محتوای تب فعلی هنگام تایپ — در updateListener (بالای boot) انجام می‌شود
 
   renderTabs()
 
