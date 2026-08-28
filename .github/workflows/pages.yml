@@ -26,6 +26,19 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v5
 
+      # @kolang/grammar is a file:../kolang-grammar dep (sibling repo, matches
+      # kolang-ide). Check it out into a subdir and link it one level up so the
+      # file: path resolves during npm install.
+      - name: Checkout kolang-grammar (sibling)
+        uses: actions/checkout@v5
+        with:
+          repository: faralidev/kolang-grammar
+          path: kolang-grammar
+
+      - name: "Place sibling repo where file: dep expects it"
+        shell: bash
+        run: ln -s "$GITHUB_WORKSPACE/kolang-grammar" "$GITHUB_WORKSPACE/../kolang-grammar"
+
       - name: Setup Node
         uses: actions/setup-node@v5
         with:

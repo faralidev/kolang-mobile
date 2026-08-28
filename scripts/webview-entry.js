@@ -11,18 +11,11 @@ import './wasm-runtime.js'
 import wasmBase64 from 'kolang-wasm-base64'
 
 // CodeMirror 6
-import { EditorView, keymap, lineNumbers } from '@codemirror/view'
-import { EditorState, Compartment } from '@codemirror/state'
-import { defaultKeymap, history, historyKeymap, indentWithTab } from '@codemirror/commands'
-import { syntaxHighlighting, bracketMatching, foldGutter, codeFolding } from '@codemirror/language'
-import { searchKeymap } from '@codemirror/search'
-import { autocompletion, completionKeymap } from '@codemirror/autocomplete'
+import { EditorView } from '@codemirror/view'
+import { foldGutter, codeFolding } from '@codemirror/language'
 
-// گرامر کلنگ
-import { kolang } from '@kolang/grammar/codemirror/kolang-syntax.js'
-
-// تم و برجسته‌سازی کلنگ (مشترک بین موبایل و مستندات)
-import { editorTheme, editorThemeLight, kolangHighlight, kolangHighlightLight } from '@kolang/grammar/codemirror/kolang-theme.js'
+// گرامر کلنگ — ساخت ویرایشگر با factory مشترک (base، تم، keymap داخل آن)
+import { createKolangEditor } from '@kolang/grammar/codemirror/kolang-editor.js'
 
 // ─── مفسر WASM ────────────────────────────────────────────────────────────
 
@@ -66,11 +59,6 @@ const post = (payload) => {
     window.ReactNativeWebView.postMessage(data)
   }
 }
-
-// ─── Compartment برای تعویض پویای تم و برجسته‌سازی ─────────────────────────
-// با reconfigure می‌توان تم ویرایشگر را بدون بازسازی کامل آن عوض کرد.
-const themeCompartment = new Compartment()
-const highlightCompartment = new Compartment()
 
 // ─── بخش‌های راهنمای تعاملی ───────────────────────────────────────────────
 // هر بخش یک مفهوم کلنگ را آموزش می‌دهد: توضیح در پنل راست، کد در ویرایشگر.
@@ -263,40 +251,30 @@ async function boot() {
     return tabs.find(t => t.id === activeTabId)
   }
 
-  editor = new EditorView({
+  // ساخت ویرایشگر با factory مشترک: base (شماره خط، history، تطبیق پرانتز،
+  // زبان کلنگ، keymap پیش‌فرض) و compartmentهای تم داخل kolang-editor.js
+  // ساخته می‌شوند. اینجا فقط اضافات مخصوص موبایل پاس داده می‌شوند.
+  let setThemeFn = null
+
+  const { view, setTheme } = createKolangEditor({
     parent: editorEl,
-    state: EditorState.create({
-      doc: '«سلام دنیا!» بنویس',
-      extensions: [
-        lineNumbers(),
-        foldGutter(),
-        codeFolding(),
-        history(),
-        bracketMatching(),
-        autocompletion(),
-        kolang(),
-        themeCompartment.of(editorTheme),
-        highlightCompartment.of(syntaxHighlighting(kolangHighlight)),
-        keymap.of([
-          // میان‌برهای سفارشی از طریق window listener (capture phase) هندل می‌شوند
-          // تا قبل از CM6 اجرا شوند. اینجا فقط keymapهای پیش‌فرض می‌مانند.
-          ...defaultKeymap,
-          ...historyKeymap,
-          ...searchKeymap,
-          ...completionKeymap,
-          indentWithTab,
-        ]),
-        EditorView.updateListener.of((update) => {
-          if (update.docChanged) {
-            post({ type: 'code', text: update.state.doc.toString() })
-            // همگام‌سازی محتوای تب فعلی
-            const tab = getActiveTab()
-            if (tab) tab.content = update.state.doc.toString()
-          }
-        }),
-      ],
-    }),
+    doc: '«سلام دنیا!» بنویس',
+    theme: 'dark',
+    extensions: [
+      foldGutter(),
+      codeFolding(),
+      EditorView.updateListener.of((update) => {
+        if (update.docChanged) {
+          post({ type: 'code', text: update.state.doc.toString() })
+          // همگام‌سازی محتوای تب فعلی
+          const tab = getActiveTab()
+          if (tab) tab.content = update.state.doc.toString()
+        }
+      }),
+    ],
   })
+  editor = view
+  setThemeFn = setTheme
 
   post({ type: 'code', text: editor.state.doc.toString() })
 
@@ -320,14 +298,8 @@ async function boot() {
 
   function applyTheme(isLight) {
     document.body.classList.toggle('light', isLight)
-    if (editor) {
-      editor.dispatch({
-        effects: [
-          themeCompartment.reconfigure(isLight ? editorThemeLight : editorTheme),
-          highlightCompartment.reconfigure(syntaxHighlighting(isLight ? kolangHighlightLight : kolangHighlight)),
-        ],
-      })
-    }
+    // جابه‌جایی تم روی compartmentهای داخل factory (setTheme از createKolangEditor)
+    if (setThemeFn) setThemeFn(isLight)
     if (themeToggleBtn) {
       // در حالت تیره → ☀️ (کلیک برای روشن)
       // در حالت روشن → 🌙 (کلیک برای تیره)
