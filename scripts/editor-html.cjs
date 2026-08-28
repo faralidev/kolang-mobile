@@ -4,12 +4,28 @@
 
 'use strict'
 
+const fs = require('fs')
+const path = require('path')
+
+// لگوی کلنگ به‌صورت data URI درون HTML درlined می‌شود تا در WebView بدون
+// base URL و در GitHub Pages بدون فایل خارجی کار کند. از assets/icon.png
+// (۱۰۲۴×۱۰۲۴) خوانده می‌شود — همان لگوی کانونی kolang-ecosystem/logo.png.
+let LOGO_DATA_URI = ''
+try {
+  const logoPath = path.resolve(__dirname, '..', 'assets', 'icon.png')
+  const bytes = fs.readFileSync(logoPath)
+  LOGO_DATA_URI = 'data:image/png;base64,' + bytes.toString('base64')
+} catch (_) {
+  // اگر assets/icon.png موجود نبود (مثلاً قبل از build)، بدون لگو رندر می‌شود.
+}
+
 function buildEditorHTML(bundleJS) {
   return `<!DOCTYPE html>
 <html dir="rtl" lang="fa">
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+<link rel="icon" type="image/png" href="${LOGO_DATA_URI}" />
 <title>ویرایشگر کلنگ</title>
 <style>
   /* ─── متغیرهای رنگ (Catppuccin Mocha = تیره، Latte = روشن) ─── */
@@ -113,10 +129,10 @@ function buildEditorHTML(bundleJS) {
   .tab-close:active{background:var(--surface1)}
 
   /* ─── پنل راهنما ─── */
-  /* گوشی: bottom sheet — از پایین بالا می‌آید (۷۰٪ ارتفاع) */
+  /* گوشی پرتره: bottom sheet — از پایین بالا می‌آید (حداکثر ۱/۳ ارتفاع) */
   #sidebar{
     position:fixed;bottom:0;left:0;right:0;top:auto;
-    height:70vh;width:100%;
+    height:33vh;width:100%;
     background:var(--mantle);
     border-top:1px solid var(--surface0);
     transform:translateY(100%);
@@ -129,6 +145,28 @@ function buildEditorHTML(bundleJS) {
   #sidebar.ready{visibility:visible}
   #sidebar.open{transform:translateY(0)}
 
+  /* موبایل: وقتی راهنما باز است، خروجی بالای راهنما بماند (فقط موبایل) */
+  body.sidebar-open{padding-bottom:33vh}
+
+  /* موبایل افقی (لنداسکیپ): پنل راهنما از راست باز می‌شود و محتوا را به چپ هل می‌دهد */
+  @media (orientation:landscape) and (max-width:767px){
+    :root{--panel-w:min(45vw,320px)}
+    #sidebar{
+      top:0;right:0;bottom:0;left:auto;
+      width:min(45vw,320px);height:100%;
+      border-top:none;
+      border-left:1px solid var(--surface0);
+      transform:translateX(100%);
+      z-index:1000;
+    }
+    #sidebar.open{transform:translateX(0)}
+    body.sidebar-open{padding-bottom:0}
+    body.sidebar-open .topbar,
+    body.sidebar-open #tab-bar,
+    body.sidebar-open #editor,
+    body.sidebar-open #output-panel{margin-right:var(--panel-w)}
+  }
+
   /* تبلت: push layout از راست */
   @media (min-width:768px){
     #sidebar{
@@ -140,6 +178,7 @@ function buildEditorHTML(bundleJS) {
       z-index:auto;
     }
     #sidebar.open{transform:translateX(0)}
+    body.sidebar-open{padding-bottom:0}
   }
 
   :root{--panel-w:0px}
@@ -301,6 +340,7 @@ function buildEditorHTML(bundleJS) {
 
   <!-- نوار تب: عنوان برنامه + تب‌های فایل -->
   <div id="tab-bar">
+    <img src="${LOGO_DATA_URI}" alt="کلنگ" style="height:22px;width:22px;border-radius:5px;vertical-align:middle;flex-shrink:0" />
     <span class="app-title">ویرایشگر کلنگ</span>
     <div id="tabs-container" style="display:flex;gap:6px;align-items:center"></div>
   </div>

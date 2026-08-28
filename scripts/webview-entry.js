@@ -14,13 +14,15 @@ import wasmBase64 from 'kolang-wasm-base64'
 import { EditorView, keymap, lineNumbers } from '@codemirror/view'
 import { EditorState, Compartment } from '@codemirror/state'
 import { defaultKeymap, history, historyKeymap, indentWithTab } from '@codemirror/commands'
-import { HighlightStyle, syntaxHighlighting, bracketMatching, foldGutter, codeFolding } from '@codemirror/language'
+import { syntaxHighlighting, bracketMatching, foldGutter, codeFolding } from '@codemirror/language'
 import { searchKeymap } from '@codemirror/search'
 import { autocompletion, completionKeymap } from '@codemirror/autocomplete'
-import { tags } from '@lezer/highlight'
 
 // گرامر کلنگ
 import { kolang } from '@kolang/grammar/codemirror/kolang-syntax.js'
+
+// تم و برجسته‌سازی کلنگ (مشترک بین موبایل و مستندات)
+import { editorTheme, editorThemeLight, kolangHighlight, kolangHighlightLight } from '@kolang/grammar/codemirror/kolang-theme.js'
 
 // ─── مفسر WASM ────────────────────────────────────────────────────────────
 
@@ -64,96 +66,6 @@ const post = (payload) => {
     window.ReactNativeWebView.postMessage(data)
   }
 }
-
-// ─── پوستهٔ تیرهٔ CodeMirror (Catppuccin Mocha) ──────────────────────────────
-
-const editorTheme = EditorView.theme({
-  '&': { height: '100%', backgroundColor: '#1e1e2e', color: '#cdd6f4', direction: 'rtl' },
-  '.cm-scroller': {
-    overflow: 'auto',
-    scrollbarWidth: 'thin',
-    scrollbarColor: '#45475a #181825',
-    direction: 'rtl',
-  },
-  '.cm-scroller::-webkit-scrollbar': { width: '8px' },
-  '.cm-scroller::-webkit-scrollbar-track': { background: '#181825' },
-  '.cm-scroller::-webkit-scrollbar-thumb': { background: '#45475a', borderRadius: '4px' },
-  '.cm-content': { caretColor: '#f5e0dc', direction: 'rtl', textAlign: 'right', fontFamily: "'Vazirmatn','Iranian Sans','Sahel',monospace" },
-  '.cm-line': { direction: 'rtl', textAlign: 'right' },
-  '&.cm-focused .cm-selectionBackground, .cm-selectionBackground, ::selection': { backgroundColor: '#585b7040' },
-  '.cm-cursor': { borderLeftColor: '#f5e0dc' },
-  '.cm-activeLine': { backgroundColor: '#31324440' },
-  '.cm-activeLineGutter': { backgroundColor: '#313244', color: '#cdd6f4' },
-  '.cm-gutters': { backgroundColor: '#181825', color: '#585b70', border: 'none', direction: 'rtl' },
-  '.cm-matchingBracket': { backgroundColor: '#585b7040', outline: '1px solid #89b4fa80' },
-}, { dark: true })
-
-const kolangHighlight = HighlightStyle.define([
-  { tag: tags.comment, color: '#7f849c', fontStyle: 'italic' },
-  { tag: tags.string, color: '#a6e3a1' },
-  { tag: tags.number, color: '#fab387' },
-  { tag: tags.bool, color: '#fab387', fontWeight: 'bold' },
-  { tag: tags.null, color: '#fab387' },
-  { tag: tags.controlKeyword, color: '#cba6f7', fontWeight: 'bold' },
-  { tag: tags.definitionKeyword, color: '#f9e2af', fontWeight: 'bold' },
-  { tag: tags.keyword, color: '#89dceb', fontStyle: 'italic' },
-  { tag: tags.operatorKeyword, color: '#f38ba8' },
-  { tag: tags.operator, color: '#89b4fa' },
-  { tag: tags.standard(tags.function(tags.variableName)), color: '#a6e3a1' },
-  { tag: tags.function(tags.variableName), color: '#89b4fa' },
-  { tag: tags.typeName, color: '#94e2d5', fontStyle: 'italic' },
-  { tag: tags.className, color: '#f38ba8', textDecoration: 'underline' },
-  { tag: tags.namespace, color: '#74c7ec', fontStyle: 'italic' },
-  { tag: tags.self, color: '#f38ba8', fontStyle: 'italic' },
-  { tag: tags.variableName, color: '#cdd6f4' },
-  { tag: tags.punctuation, color: '#9399b2' },
-  { tag: tags.meta, color: '#f5c2e7' },
-])
-
-// ─── پوستهٔ روشن CodeMirror (Catppuccin Latte) ──────────────────────────────
-
-const editorThemeLight = EditorView.theme({
-  '&': { height: '100%', backgroundColor: '#eff1f5', color: '#4c4f69', direction: 'rtl' },
-  '.cm-scroller': {
-    overflow: 'auto',
-    scrollbarWidth: 'thin',
-    scrollbarColor: '#bcc0cc #e6e9ef',
-    direction: 'rtl',
-  },
-  '.cm-scroller::-webkit-scrollbar': { width: '8px' },
-  '.cm-scroller::-webkit-scrollbar-track': { background: '#e6e9ef' },
-  '.cm-scroller::-webkit-scrollbar-thumb': { background: '#bcc0cc', borderRadius: '4px' },
-  '.cm-content': { caretColor: '#dc8a78', direction: 'rtl', textAlign: 'right', fontFamily: "'Vazirmatn','Iranian Sans','Sahel',monospace" },
-  '.cm-line': { direction: 'rtl', textAlign: 'right' },
-  '&.cm-focused .cm-selectionBackground, .cm-selectionBackground, ::selection': { backgroundColor: '#acb0be80' },
-  '.cm-cursor': { borderLeftColor: '#dc8a78' },
-  '.cm-activeLine': { backgroundColor: '#bcc0cc40' },
-  '.cm-activeLineGutter': { backgroundColor: '#ccd0da', color: '#4c4f69' },
-  '.cm-gutters': { backgroundColor: '#e6e9ef', color: '#acb0be', border: 'none', direction: 'rtl' },
-  '.cm-matchingBracket': { backgroundColor: '#acb0be40', outline: '1px solid #1e66f580' },
-}, { dark: false })
-
-const kolangHighlightLight = HighlightStyle.define([
-  { tag: tags.comment, color: '#7c7f93', fontStyle: 'italic' },
-  { tag: tags.string, color: '#40a02b' },
-  { tag: tags.number, color: '#fe640b' },
-  { tag: tags.bool, color: '#fe640b', fontWeight: 'bold' },
-  { tag: tags.null, color: '#fe640b' },
-  { tag: tags.controlKeyword, color: '#8839ef', fontWeight: 'bold' },
-  { tag: tags.definitionKeyword, color: '#df8e1d', fontWeight: 'bold' },
-  { tag: tags.keyword, color: '#04a5e5', fontStyle: 'italic' },
-  { tag: tags.operatorKeyword, color: '#d20f39' },
-  { tag: tags.operator, color: '#1e66f5' },
-  { tag: tags.standard(tags.function(tags.variableName)), color: '#40a02b' },
-  { tag: tags.function(tags.variableName), color: '#1e66f5' },
-  { tag: tags.typeName, color: '#179299', fontStyle: 'italic' },
-  { tag: tags.className, color: '#d20f39', textDecoration: 'underline' },
-  { tag: tags.namespace, color: '#04a5e5', fontStyle: 'italic' },
-  { tag: tags.self, color: '#d20f39', fontStyle: 'italic' },
-  { tag: tags.variableName, color: '#4c4f69' },
-  { tag: tags.punctuation, color: '#7c7f93' },
-  { tag: tags.meta, color: '#ea76cb' },
-])
 
 // ─── Compartment برای تعویض پویای تم و برجسته‌سازی ─────────────────────────
 // با reconfigure می‌توان تم ویرایشگر را بدون بازسازی کامل آن عوض کرد.
@@ -652,10 +564,16 @@ async function boot() {
     return sidebarEl ? sidebarEl.offsetWidth : 0
   }
 
+  // push layout (margin-right) اعمال می‌شود روی: تبلت (≥۷۶۸پیکسل) و گوشی لنداسکیپ.
+  // روی گوشی پرتره پنل bottom sheet است و push لازم ندارد.
+  function isPushLayout() {
+    if (isTablet()) return true
+    return window.matchMedia('(orientation:landscape) and (max-width:767px)').matches
+  }
+
   function updatePanelMargin() {
-    // فقط روی تبلت margin-right اعمال می‌شود (push layout).
-    // روی گوشی پنل تمام‌صفحه است و margin لازم ندارد.
-    const w = (sidebarOpen && isTablet()) ? getPanelWidth() : 0
+    // margin-right فقط در حالت push (تبلت یا گوشی لنداسکیپ) و وقتی پنل باز است.
+    const w = (sidebarOpen && isPushLayout()) ? getPanelWidth() : 0
     document.documentElement.style.setProperty('--panel-w', w + 'px')
   }
 
@@ -819,19 +737,11 @@ async function boot() {
     })
   }
 
-  // واکنش به تغییر اندازهٔ پنجره
+  // واکنش به تغییر اندازهٔ پنجره (شامل چرخش گوشی).
+  // وضعیت باز/بستهٔ پنل را حفظ کن — فقط state را دوباره اعمال کن تا
+  // transform/width مناسب جهت جدید اعمال شود و margin به‌روز شود.
   window.addEventListener('resize', () => {
-    if (isTablet()) {
-      if (!sidebarOpen) {
-        sidebarOpen = true
-        applySidebarState()
-      }
-    } else {
-      if (sidebarOpen) {
-        sidebarOpen = false
-        applySidebarState()
-      }
-    }
+    applySidebarState()
     updatePanelMargin()
   })
 

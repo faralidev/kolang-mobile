@@ -1,4 +1,5 @@
 {
   "name": "kolang-mobile",
-  "displayName": "ویرایشگر کلنگ"
+  "displayName": "ویرایشگر کلنگ",
+  "icon": "./assets/icon.png"
 }
