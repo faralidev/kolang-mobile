@@ -44,9 +44,6 @@ function buildEditorHTML(bundleJS) {
   }
 
   /* ─── نوار بالا ─── */
-  /* direction:ltr چون نوار ابزار رابط کاربری است، نه متن فارسی.
-     عنوان فارسی درون ظرف LTR درست نمایش داده می‌شود. این باعث می‌شود
-     عنوان در چپ و دکمه‌ها در راست قرار گیرند. */
   .topbar{
     display:flex;align-items:center;gap:6px;
     padding:8px 12px;
@@ -54,6 +51,7 @@ function buildEditorHTML(bundleJS) {
     border-bottom:1px solid var(--surface0);
     flex-shrink:0;
     direction:ltr;
+    transition:margin-right 0.25s ease;
   }
   .topbar-title{
     color:var(--text);font-weight:700;font-size:15px;
@@ -97,29 +95,42 @@ function buildEditorHTML(bundleJS) {
   .tab-name{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
   .tab-icon{font-size:13px}
 
-  /* ─── پنل راهنما (راست، push—not overlay) ─── */
+  /* ─── پنل راهنما ─── */
+  /* گوشی: dropdown تمام‌صفحه — از بالا پایین می‌آید */
+  /* پیش‌فرض visibility:hidden تا قبل از آماده‌شدن JS فلاش نزند */
   #sidebar{
-    position:fixed;top:0;bottom:0;right:0;
-    width:min(280px,70vw);
+    position:fixed;top:0;left:0;right:0;bottom:0;
+    width:100%;height:100%;
     background:var(--mantle);
-    border-left:1px solid var(--surface0);
-    transform:translateX(100%);
+    transform:translateY(-100%);
     transition:transform 0.25s ease,background 0.2s ease;
-    z-index:100;
+    z-index:1000;
     display:flex;flex-direction:column;
     overflow:hidden;
-    box-shadow:-2px 0 12px rgba(0,0,0,0.3);
+    visibility:hidden;
   }
-  #sidebar.open{transform:translateX(0)}
+  #sidebar.ready{visibility:visible}
+  #sidebar.open{transform:translateY(0)}
 
+  /* تبلت: push layout از راست */
   @media (min-width:768px){
-    #sidebar{width:320px}
+    #sidebar{
+      top:0;right:0;bottom:0;left:auto;
+      width:320px;height:100%;
+      transform:translateX(100%);
+      z-index:auto;
+    }
+    #sidebar.open{transform:translateX(0)}
   }
 
-  body.sidebar-open #editor,
-  body.sidebar-open #output-panel,
-  body.sidebar-open #tab-bar{margin-right:var(--panel-w)}
   :root{--panel-w:0px}
+  /* فقط روی تبلت margin-right اعمال می‌شود (push). روی گوشی full-screen است. */
+  @media (min-width:768px){
+    body.sidebar-open .topbar,
+    body.sidebar-open #tab-bar,
+    body.sidebar-open #editor,
+    body.sidebar-open #output-panel{margin-right:var(--panel-w)}
+  }
 
   /* نوار ناوبری بالا (قبلی/بعدی/گام) */
   .sidebar-nav{
@@ -247,7 +258,7 @@ function buildEditorHTML(bundleJS) {
     </div>
   </div>
 
-  <!-- پنل راهنما (راست) -->
+  <!-- پنل راهنما (روی گوشی: تمام‌صفحه، روی تبلت: push از راست) -->
   <div id="sidebar">
     <div class="sidebar-nav">
       <span class="sidebar-nav-title">راهنما</span>

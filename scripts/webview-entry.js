@@ -567,7 +567,9 @@ async function boot() {
   }
 
   function updatePanelMargin() {
-    const w = sidebarOpen ? getPanelWidth() : 0
+    // فقط روی تبلت margin-right اعمال می‌شود (push layout).
+    // روی گوشی پنل تمام‌صفحه است و margin لازم ندارد.
+    const w = (sidebarOpen && isTablet()) ? getPanelWidth() : 0
     document.documentElement.style.setProperty('--panel-w', w + 'px')
   }
 
@@ -596,11 +598,14 @@ async function boot() {
   if (sidebarToggleBtn) sidebarToggleBtn.addEventListener('click', toggleSidebar)
   if (sidebarCloseBtn) sidebarCloseBtn.addEventListener('click', closeSidebar)
 
-  // ─── حالت اولیه: روی تبلت پنل باز است ───────────────────────────────────
+  // ─── حالت اولیه: روی تبلت پنل باز است، روی گوشی بسته ─────────────────────
+  // بعد از تعیین حالت اولیه، کلاس ready را اضافه کن تا visibility:hidden
+  // برداشته شود و فلاش نزند.
   if (isTablet()) {
     sidebarOpen = true
   }
   applySidebarState()
+  if (sidebarEl) sidebarEl.classList.add('ready')
 
   // ─── ناوبری بین بخش‌ها ───────────────────────────────────────────────────
   function loadSection(index) {
@@ -704,6 +709,21 @@ async function boot() {
       }
     }
     updatePanelMargin()
+  })
+
+  // ─── میان‌برهای کیبورد (سطح پنجره — حتی وقتی ویرایشگر فوکوس ندارد) ────────
+  // Mod-Enter / Ctrl+Enter → اجرا. Ctrl+←/→ → بخش قبلی/بعدی.
+  window.addEventListener('keydown', (e) => {
+    if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
+      e.preventDefault()
+      runKolangNow()
+    } else if (e.ctrlKey && e.key === 'ArrowLeft') {
+      e.preventDefault()
+      prevSection()
+    } else if (e.ctrlKey && e.key === 'ArrowRight') {
+      e.preventDefault()
+      nextSection()
+    }
   })
 }
 
