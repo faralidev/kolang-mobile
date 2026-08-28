@@ -6,7 +6,13 @@
     "android": "react-native run-android",
     "ios": "react-native run-ios",
     "start": "react-native start",
-    "lint": "eslint ."
+    "lint": "eslint .",
+    "build:webview": "node scripts/build-webview.cjs",
+    "build:pages": "node scripts/build-pages.cjs",
+    "build": "npm run build:webview && npm run build:pages",
+    "prestart": "node scripts/build-webview.cjs",
+    "preandroid": "node scripts/build-webview.cjs",
+    "preios": "node scripts/build-webview.cjs"
   },
   "dependencies": {
     "react": "^18.3.1",
