@@ -357,15 +357,18 @@ async function boot() {
         themeCompartment.of(editorTheme),
         highlightCompartment.of(syntaxHighlighting(kolangHighlight)),
         keymap.of([
+          // میان‌برهای سفارشی باید قبل از defaultKeymap باشند تا اولویت داشته باشند.
+          // defaultKeymap شامل Mod-Enter (insertBlankLine) و Enter+shift
+          // (insertNewlineAndIndent) است که میان‌برهای ما را می‌بلعند.
+          { key: 'Mod-Enter', run: () => { runKolangNow(); return true } },
+          { key: 'Shift-Enter', run: () => { runKolangNow(); return true } },
+          { key: 'Ctrl-ArrowLeft', run: () => { prevSection(); return true } },
+          { key: 'Ctrl-ArrowRight', run: () => { nextSection(); return true } },
           ...defaultKeymap,
           ...historyKeymap,
           ...searchKeymap,
           ...completionKeymap,
           indentWithTab,
-          { key: 'Mod-Enter', run: () => { runKolangNow(); return true } },
-          { key: 'Shift-Enter', run: () => { runKolangNow(); return true } },
-          { key: 'Ctrl-ArrowLeft', run: () => { prevSection(); return true } },
-          { key: 'Ctrl-ArrowRight', run: () => { nextSection(); return true } },
         ]),
         EditorView.updateListener.of((update) => {
           if (update.docChanged) {
@@ -712,17 +715,22 @@ async function boot() {
   })
 
   // ─── میان‌برهای کیبورد (سطح پنجره — حتی وقتی ویرایشگر فوکوس ندارد) ────────
-  // Mod-Enter / Ctrl+Enter → اجرا. Ctrl+←/→ → بخش قبلی/بعدی.
+  // Mod-Enter / Shift+Enter → اجرا. Ctrl+←/→ → بخش قبلی/بعدی.
   window.addEventListener('keydown', (e) => {
-    if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
+    if (((e.ctrlKey || e.metaKey) && e.key === 'Enter') || (e.shiftKey && e.key === 'Enter')) {
       e.preventDefault()
       runKolangNow()
-    } else if (e.ctrlKey && e.key === 'ArrowLeft') {
+      return
+    }
+    if (e.ctrlKey && (e.key === 'ArrowLeft' || e.key === 'Left')) {
       e.preventDefault()
       prevSection()
-    } else if (e.ctrlKey && e.key === 'ArrowRight') {
+      return
+    }
+    if (e.ctrlKey && (e.key === 'ArrowRight' || e.key === 'Right')) {
       e.preventDefault()
       nextSection()
+      return
     }
   })
 }

@@ -51,12 +51,15 @@ function buildEditorHTML(bundleJS) {
     border-bottom:1px solid var(--surface0);
     flex-shrink:0;
     direction:ltr;
+    position:relative;
     transition:margin-right 0.25s ease;
   }
   .topbar-title{
     color:var(--text);font-weight:700;font-size:15px;
-    flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+    white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
     direction:rtl;
+    position:absolute;left:50%;transform:translateX(-50%);
+    pointer-events:none;
   }
   .topbar-btn{
     display:flex;align-items:center;justify-content:center;gap:4px;
@@ -96,13 +99,14 @@ function buildEditorHTML(bundleJS) {
   .tab-icon{font-size:13px}
 
   /* ─── پنل راهنما ─── */
-  /* گوشی: dropdown تمام‌صفحه — از بالا پایین می‌آید */
+  /* گوشی: bottom sheet — از پایین بالا می‌آید (۷۰٪ ارتفاع) */
   /* پیش‌فرض visibility:hidden تا قبل از آماده‌شدن JS فلاش نزند */
   #sidebar{
-    position:fixed;top:0;left:0;right:0;bottom:0;
-    width:100%;height:100%;
+    position:fixed;bottom:0;left:0;right:0;top:auto;
+    height:70vh;width:100%;
     background:var(--mantle);
-    transform:translateY(-100%);
+    border-top:1px solid var(--surface0);
+    transform:translateY(100%);
     transition:transform 0.25s ease,background 0.2s ease;
     z-index:1000;
     display:flex;flex-direction:column;
@@ -117,6 +121,8 @@ function buildEditorHTML(bundleJS) {
     #sidebar{
       top:0;right:0;bottom:0;left:auto;
       width:320px;height:100%;
+      border-top:none;
+      border-left:1px solid var(--surface0);
       transform:translateX(100%);
       z-index:auto;
     }
