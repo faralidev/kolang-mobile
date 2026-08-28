@@ -12,7 +12,7 @@ import wasmBase64 from 'kolang-wasm-base64'
 
 // CodeMirror 6
 import { EditorView, keymap, lineNumbers } from '@codemirror/view'
-import { EditorState } from '@codemirror/state'
+import { EditorState, Compartment } from '@codemirror/state'
 import { defaultKeymap, history, historyKeymap, indentWithTab } from '@codemirror/commands'
 import { HighlightStyle, syntaxHighlighting, bracketMatching, foldGutter, codeFolding } from '@codemirror/language'
 import { searchKeymap } from '@codemirror/search'
@@ -109,6 +109,56 @@ const kolangHighlight = HighlightStyle.define([
   { tag: tags.punctuation, color: '#9399b2' },
   { tag: tags.meta, color: '#f5c2e7' },
 ])
+
+// ─── پوستهٔ روشن CodeMirror (Catppuccin Latte) ──────────────────────────────
+
+const editorThemeLight = EditorView.theme({
+  '&': { height: '100%', backgroundColor: '#eff1f5', color: '#4c4f69', direction: 'rtl' },
+  '.cm-scroller': {
+    overflow: 'auto',
+    scrollbarWidth: 'thin',
+    scrollbarColor: '#bcc0cc #e6e9ef',
+    direction: 'rtl',
+  },
+  '.cm-scroller::-webkit-scrollbar': { width: '8px' },
+  '.cm-scroller::-webkit-scrollbar-track': { background: '#e6e9ef' },
+  '.cm-scroller::-webkit-scrollbar-thumb': { background: '#bcc0cc', borderRadius: '4px' },
+  '.cm-content': { caretColor: '#dc8a78', direction: 'rtl', textAlign: 'right', fontFamily: "'Vazirmatn','Iranian Sans','Sahel',monospace" },
+  '.cm-line': { direction: 'rtl', textAlign: 'right' },
+  '&.cm-focused .cm-selectionBackground, .cm-selectionBackground, ::selection': { backgroundColor: '#acb0be80' },
+  '.cm-cursor': { borderLeftColor: '#dc8a78' },
+  '.cm-activeLine': { backgroundColor: '#bcc0cc40' },
+  '.cm-activeLineGutter': { backgroundColor: '#ccd0da', color: '#4c4f69' },
+  '.cm-gutters': { backgroundColor: '#e6e9ef', color: '#acb0be', border: 'none', direction: 'rtl' },
+  '.cm-matchingBracket': { backgroundColor: '#acb0be40', outline: '1px solid #1e66f580' },
+}, { dark: false })
+
+const kolangHighlightLight = HighlightStyle.define([
+  { tag: tags.comment, color: '#7c7f93', fontStyle: 'italic' },
+  { tag: tags.string, color: '#40a02b' },
+  { tag: tags.number, color: '#fe640b' },
+  { tag: tags.bool, color: '#fe640b', fontWeight: 'bold' },
+  { tag: tags.null, color: '#fe640b' },
+  { tag: tags.controlKeyword, color: '#8839ef', fontWeight: 'bold' },
+  { tag: tags.definitionKeyword, color: '#df8e1d', fontWeight: 'bold' },
+  { tag: tags.keyword, color: '#04a5e5', fontStyle: 'italic' },
+  { tag: tags.operatorKeyword, color: '#d20f39' },
+  { tag: tags.operator, color: '#1e66f5' },
+  { tag: tags.standard(tags.function(tags.variableName)), color: '#40a02b' },
+  { tag: tags.function(tags.variableName), color: '#1e66f5' },
+  { tag: tags.typeName, color: '#179299', fontStyle: 'italic' },
+  { tag: tags.className, color: '#d20f39', textDecoration: 'underline' },
+  { tag: tags.namespace, color: '#04a5e5', fontStyle: 'italic' },
+  { tag: tags.self, color: '#d20f39', fontStyle: 'italic' },
+  { tag: tags.variableName, color: '#4c4f69' },
+  { tag: tags.punctuation, color: '#7c7f93' },
+  { tag: tags.meta, color: '#ea76cb' },
+])
+
+// ─── Compartment برای تعویض پویای تم و برجسته‌سازی ─────────────────────────
+// با reconfigure می‌توان تم ویرایشگر را بدون بازسازی کامل آن عوض کرد.
+const themeCompartment = new Compartment()
+const highlightCompartment = new Compartment()
 
 // ─── بخش‌های راهنمای تعاملی ───────────────────────────────────────────────
 // هر بخش یک مفهوم کلنگ را آموزش می‌دهد: توضیح در پنل راست، کد در ویرایشگر.
@@ -304,8 +354,8 @@ async function boot() {
         bracketMatching(),
         autocompletion(),
         kolang(),
-        editorTheme,
-        syntaxHighlighting(kolangHighlight),
+        themeCompartment.of(editorTheme),
+        highlightCompartment.of(syntaxHighlighting(kolangHighlight)),
         keymap.of([
           ...defaultKeymap,
           ...historyKeymap,
@@ -339,6 +389,74 @@ async function boot() {
   // سیم‌کشی دکمه‌ها
   const runBtn = document.getElementById('run-btn')
   if (runBtn) runBtn.addEventListener('click', () => runKolangNow())
+
+  // ─── مدیریت تم (تیره/روشن) ───────────────────────────────────────────────
+  // روی بارگذاری، تم سیستم عامل را تشخیص می‌دهد. کاربر می‌تواند با دکمهٔ ☀️/🌙
+  // تم را دستی عوض کند. پس از تغییر دستی، دنبال‌کردن تم سیستم متوقف می‌شود.
+  const themeToggleBtn = document.getElementById('theme-toggle-btn')
+  let userOverrodeTheme = false
+
+  function applyTheme(isLight) {
+    document.body.classList.toggle('light', isLight)
+    if (editor) {
+      editor.dispatch({
+        effects: [
+          themeCompartment.reconfigure(isLight ? editorThemeLight : editorTheme),
+          highlightCompartment.reconfigure(syntaxHighlighting(isLight ? kolangHighlightLight : kolangHighlight)),
+        ],
+      })
+    }
+    if (themeToggleBtn) {
+      // در حالت تیره → ☀️ (کلیک برای روشن)
+      // در حالت روشن → 🌙 (کلیک برای تیره)
+      themeToggleBtn.textContent = isLight ? '🌙' : '☀️'
+    }
+  }
+
+  function getSystemLight() {
+    try {
+      return window.matchMedia('(prefers-color-scheme: light)').matches
+    } catch (_) {
+      return false
+    }
+  }
+
+  // بارگذاری اولیه: ترجیح ذخیره‌شده، وگرنه تم سیستم
+  const savedTheme = localStorage.getItem('kolang-theme')
+  let isLight
+  if (savedTheme === 'light') {
+    isLight = true
+    userOverrodeTheme = true
+  } else if (savedTheme === 'dark') {
+    isLight = false
+    userOverrodeTheme = true
+  } else {
+    // 'auto' یا ذخیره‌نشده — از تم سیستم استفاده کن
+    isLight = getSystemLight()
+  }
+  applyTheme(isLight)
+
+  // دکمهٔ تغییر تم
+  if (themeToggleBtn) {
+    themeToggleBtn.addEventListener('click', () => {
+      userOverrodeTheme = true
+      const newLight = !document.body.classList.contains('light')
+      applyTheme(newLight)
+      localStorage.setItem('kolang-theme', newLight ? 'light' : 'dark')
+    })
+  }
+
+  // گوش‌دادن به تغییر تم سیستم — فقط اگر کاربąd دستی نکرده باشد
+  try {
+    const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)')
+    mediaQuery.addEventListener('change', (e) => {
+      if (userOverrodeTheme) return
+      // e.matches == true یعنی سیستم به تیره تغییر کرد
+      applyTheme(!e.matches)
+    })
+  } catch (_) {
+    // مرورگر قدیمی — بی‌خیال
+  }
 
   // ─── باز کردن، ذخیره، و فایل جدید ────────────────────────────────────────
   // از API مرورگر (FileReader و Blob download) استفاده می‌شود که هم در
