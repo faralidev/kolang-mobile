@@ -48,8 +48,28 @@ function buildEditorHTML(bundleJS) {
   .btn-run{background:#a6e3a1;color:#1e1e2e}
   .btn-run:active{opacity:0.8}
 
+  /* ─── نوار تب (نام فایل فعلی) ─── */
+  #tab-bar{
+    display:flex;align-items:center;
+    padding:4px 12px;
+    background:#11111b;
+    border-bottom:1px solid #313244;
+    flex-shrink:0;
+    transition:margin-right 0.25s ease;
+  }
+  .tab-item{
+    display:flex;align-items:center;gap:6px;
+    padding:6px 12px;
+    background:#181825;
+    border-radius:8px 8px 0 0;
+    color:#cdd6f4;font-size:12px;
+    cursor:pointer;
+    max-width:200px;
+  }
+  .tab-name{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .tab-icon{font-size:13px}
+
   /* ─── پنل راهنما (راست، push—not overlay) ─── */
-  /* پنل از سمت راست باز می‌شود و محتوای اصلی را به چپ هل می‌دهد. */
   #sidebar{
     position:fixed;top:0;bottom:0;right:0;
     width:min(280px,70vw);
@@ -68,23 +88,33 @@ function buildEditorHTML(bundleJS) {
     #sidebar{width:320px}
   }
 
-  /* وقتی پنل باز است، ویرایشگر و خروجی به اندازهٔ عرض پنل به چپ هل می‌شوند.
-     این روی همهٔ اندازه‌های صفحه اعمال می‌شود (push، نه overlay). */
   body.sidebar-open #editor,
-  body.sidebar-pinned #editor{margin-right:var(--panel-w)}
   body.sidebar-open #output-panel,
-  body.sidebar-pinned #output-panel{margin-right:var(--panel-w)}
-
-  /* متغیر عرض پنل — به‌صورت پویا توسط JS تنظیم می‌شود */
+  body.sidebar-open #tab-bar{margin-right:var(--panel-w)}
   :root{--panel-w:0px}
 
-  .sidebar-header{
-    display:flex;align-items:center;justify-content:space-between;
-    padding:12px 16px;
+  /* نوار ناوبری بالا (قبلی/بعدی/گام) */
+  .sidebar-nav{
+    display:flex;align-items:center;gap:6px;
+    padding:10px 12px;
     border-bottom:1px solid #313244;
     flex-shrink:0;
   }
-  .sidebar-title{color:#cdd6f4;font-weight:700;font-size:15px}
+  .sidebar-nav-title{
+    color:#cdd6f4;font-weight:700;font-size:14px;
+    flex:1;white-space:nowrap;
+  }
+  .nav-btn{
+    background:#45475a;color:#cdd6f4;border:none;
+    border-radius:8px;padding:6px 10px;
+    font-family:inherit;font-size:12px;font-weight:600;
+    cursor:pointer;min-height:32px;min-width:32px;
+    display:flex;align-items:center;gap:3px;
+  }
+  .nav-btn:active{background:#585b70}
+  .nav-btn:disabled{opacity:0.3;cursor:default}
+  .nav-progress{color:#a6adc8;font-size:11px;white-space:nowrap}
+
   .sidebar-close{
     background:none;border:none;color:#a6adc8;
     font-size:20px;cursor:pointer;padding:4px 8px;
@@ -92,6 +122,12 @@ function buildEditorHTML(bundleJS) {
     border-radius:6px;
   }
   .sidebar-close:active{background:#313244}
+
+  /* روی تبلت: ☰ و ✕ پنهان می‌شوند (پنل همیشه باز است) */
+  @media (min-width:768px){
+    #sidebar-toggle-btn{display:none}
+    #sidebar .sidebar-close{display:none}
+  }
 
   /* ─── فهرست بخش‌های راهنما ─── */
   #help-list{
@@ -125,18 +161,7 @@ function buildEditorHTML(bundleJS) {
   .help-action{
     background:#313244;border-radius:8px;padding:8px 12px;
     color:#fab387;font-size:12px;line-height:1.5;
-    margin-bottom:12px;
   }
-  .help-nav{display:flex;gap:8px;align-items:center}
-  .help-nav-btn{
-    background:#45475a;color:#cdd6f4;border:none;
-    border-radius:8px;padding:8px 14px;
-    font-family:inherit;font-size:12px;font-weight:600;
-    cursor:pointer;min-height:36px;
-  }
-  .help-nav-btn:active{background:#585b70}
-  .help-nav-btn:disabled{opacity:0.4;cursor:default}
-  .help-progress{color:#a6adc8;font-size:11px;flex:1;text-align:center}
 
   /* ─── ویرایشگر ─── */
   #editor{
@@ -175,19 +200,31 @@ function buildEditorHTML(bundleJS) {
 </head>
 <body>
 
-  <!-- نوار بالا -->
+  <!-- نوار بالا: عنوان در چپ، دکمه‌ها در راست -->
   <div class="topbar">
     <span class="topbar-title">ویرایشگر کلنگ</span>
+    <button id="new-btn" class="topbar-btn btn-file" title="فایل جدید">📄</button>
     <button id="open-btn" class="topbar-btn btn-file" title="باز کردن فایل">📂</button>
     <button id="save-btn" class="topbar-btn btn-file" title="ذخیره فایل">💾</button>
     <button id="run-btn" class="topbar-btn btn-run">▶ اجرا</button>
     <button id="sidebar-toggle-btn" class="topbar-btn btn-menu" title="راهنما">☰</button>
   </div>
 
+  <!-- نوار تب (نام فایل) -->
+  <div id="tab-bar">
+    <div class="tab-item">
+      <span class="tab-icon">📄</span>
+      <span class="tab-name" id="tab-name">برنامه.kolang</span>
+    </div>
+  </div>
+
   <!-- پنل راهنما (راست) -->
   <div id="sidebar">
-    <div class="sidebar-header">
-      <span class="sidebar-title">راهنما</span>
+    <div class="sidebar-nav">
+      <span class="sidebar-nav-title">راهنما</span>
+      <button id="prev-btn" class="nav-btn" title="قبلی (Ctrl+→)">→ قبلی</button>
+      <span id="nav-progress" class="nav-progress">گام ۱ از ۱۹</span>
+      <button id="next-btn" class="nav-btn" title="بعدی (Ctrl+←)">بعدی ←</button>
       <button id="sidebar-close" class="sidebar-close">✕</button>
     </div>
     <div id="help-list"></div>

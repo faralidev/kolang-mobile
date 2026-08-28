@@ -113,12 +113,13 @@ const kolangHighlight = HighlightStyle.define([
 // ─── بخش‌های راهنمای تعاملی ───────────────────────────────────────────────
 // هر بخش یک مفهوم کلنگ را آموزش می‌دهد: توضیح در پنل راست، کد در ویرایشگر.
 // کاربر با کمترین تغییر (اجرا، ویرایش یک کلمه) مفهوم را یاد می‌گیرد.
+// نحو (syntax) بر اساس SPEC.md و examples/ کلنگ است.
 
 const HELP_SECTIONS = [
   {
     title: '۱. سلام دنیا',
     filename: 'hello.kolang',
-    explanation: 'تابع «بنویس» متن را در خروجی چاپ می‌کند. متن‌ها در کلنگ با گیومهٔ فرانسوی «» نوشته می‌شوند.',
+    explanation: 'تابع «بنویس» متن را در خروجی چاپ می‌کند. متن‌ها در کلنگ با گیومهٔ فرانسوی «» نوشته می‌شوند. این ساده‌ترین برنامهٔ ممکن است.',
     action: 'دکمهٔ ▶ اجرا را بزنید تا «سلام دنیا!» چاپ شود.',
     code: '«سلام دنیا!» بنویس',
   },
@@ -130,32 +131,123 @@ const HELP_SECTIONS = [
     code: 'نام = «رامین»\n«سلام » + نام بنویس',
   },
   {
-    title: '۳. محاسبات',
-    filename: 'calculations.kolang',
-    explanation: 'کلنگ از عملیات ریاضی پشتیبانی می‌کند: + ، - ، × (ضرب) ، ÷ (تقسیم). متغیرها می‌توانند اعداد را هم ذخیره کنند.',
-    action: 'اعداد ۱۰ یا ۵ را تغییر دهید و نتیجه را ببینید.',
-    code: 'طول = ۱۰\nعرض = ۵\nمساحت = طول × عرض\n«مساحت: » + مساحت بنویس',
+    title: '۳. انواع داده',
+    filename: 'data-types.kolang',
+    explanation: 'کلنگ چند نوع داده دارد: عدد صحیح (۱۲۳)، عدد اعشاری (۳٫۱۴)، بولی (درست/غلط)، و متن («...»). هر کدام کاربرد خود را دارد.',
+    action: 'مقدار سن را تغییر دهید و نتیجه را ببینید.',
+    code: 'سن = ۲۰\nامتیاز = ۱۸٫۵\nفعال = درست\nنام = «علی»\n«سن: » + متن(سن) بنویس\n«امتیاز: » + متن(امتیاز) بنویس\n«فعال: » + متن(فعال) بنویس',
   },
   {
-    title: '۴. شرط‌ها',
+    title: '۴. محاسبات',
+    filename: 'calculations.kolang',
+    explanation: 'کلنگ از عملیات ریاضی پشتیبانی می‌کند: + (جمع)، - (منها)، × (ضرب)، ÷ (تقسیم)، * (توان)، % (باقی‌مانده).',
+    action: 'اعداد ۱۰ یا ۵ را تغییر دهید و نتیجه را ببینید.',
+    code: 'طول = ۱۰\nعرض = ۵\nمساحت = طول × عرض\n«مساحت: » + متن(مساحت) بنویس\n«توان: » + متن(طول * ۲) بنویس\n«باقی‌مانده: » + متن(طول % ۳) بنویس',
+  },
+  {
+    title: '۵. رشته‌ها',
+    filename: 'strings.kolang',
+    explanation: 'رشته‌ها در کلنگ می‌توانند متغیر را درون خود جای دهند (f-string). کافی است نام متغیر را درون آکولاد { } قرار دهید. این کار ساختن پیام‌های پویا را آسان می‌کند.',
+    action: 'نام «علی» را تغییر دهید و پیام را ببینید.',
+    code: 'نام = «علی»\n«سلام {نام}!» بنویس\nپیام = «سلام {نام} عزیز، به کلنگ خوش آمدید»\nپیام بنویس',
+  },
+  {
+    title: '۶. شرط‌ها',
     filename: 'conditionals.kolang',
-    explanation: 'با «اگر ... باشد:» می‌توان بر اساس یک شرط تصمیم گرفت. بخش «وگرنه:» زمانی اجرا می‌شود که شرط برقرار نباشد. بلوک‌ها با فاصله (تورفتگی) مشخص می‌شوند — مانند پایتون.',
+    explanation: 'با «اگر ... باشد:» می‌توان بر اساس یک شرط تصمیم گرفت. بخش «وگرنه:» زمانی اجرا می‌شود که شرط برقرار نباشد. بلوک‌ها با فاصله (تورفتگی) مشخص می‌شوند.',
     action: 'عدد ۲۰ را به ۱۵ تغییر دهید و اجرا کنید تا «کودک» چاپ شود.',
     code: 'سن = ۲۰\nاگر سن >= ۱۸ باشد:\n    «بزرگسال» بنویس\nوگرنه:\n    «کودک» بنویس',
   },
   {
-    title: '۵. حلقه‌ها',
+    title: '۷. حلقهٔ برای',
     filename: 'loops.kolang',
-    explanation: 'با «برای ای از A تا B:» می‌توان روی اعداد پشت سر هم کار کرد. متغیر حلقه در هر تکرار مقدار بعدی را می‌گیرد.',
+    explanation: 'با «برای ای از A تا B:» می‌توان روی اعداد پشت سر هم کار کرد. متغیر حلقه در هر تکرار مقدار بعدی را می‌گیرد. این برای تکرار یک کار مفید است.',
     action: 'عدد ۵ را به ۱۰ تغییر دهید و اجرا کنید.',
-    code: 'برای ای از ۱ تا ۵:\n    «شماره: » + ای بنویس',
+    code: 'برای ای از ۱ تا ۵:\n    «شماره: » + متن(ای) بنویس',
   },
   {
-    title: '۶. توابع',
+    title: '۸. حلقهٔ تاوقتی',
+    filename: 'while-loop.kolang',
+    explanation: 'حلقهٔ «تاوقتی» تا زمانی که شرط برقرار باشد تکرار می‌شود. برای کارهایی که نمی‌دانیم چند بار باید تکرار شوند مناسب است. مراقب باشید که شرط روزی غلط شود وگرنه حلقه بی‌نهایت می‌شود!',
+    action: 'مقدار نهایی ۱۰ را به ۲۰ تغییر دهید و اجرا کنید.',
+    code: 'شمارنده = ۰\nتاوقتی شمارنده < ۱۰ باشد:\n    «شمارنده: » + متن(شمارنده) بنویس\n    شمارنده += ۱',
+  },
+  {
+    title: '۹. توابع',
     filename: 'functions.kolang',
-    explanation: 'با «تعریف نام(پارامتر):» می‌توان یک تابع ساخت و آن را چند بار با ورودی‌های متفاوت صدا زد. بدنهٔ تابع با تورفتگی مشخص می‌شود.',
+    explanation: 'با «تعریف نام(پارامتر):» می‌توان یک تابع ساخت و آن را چند بار با ورودی‌های متفاوت صدا زد. تابع‌ها کد را سازمان‌دهی می‌کنند و از تکرار جلوگیری می‌کنند. آرگومان‌ها با «و» جدا می‌شوند.',
     action: 'یک فراخوانی سوم اضافه کنید: سلام(«نام شما») و اجرا کنید.',
     code: 'تعریف سلام(نام):\n    «سلام » + نام بنویس\n\nسلام(«رامین»)\nسلام(«دنیا»)',
+  },
+  {
+    title: '۱۰. عبارت لوله',
+    filename: 'pipe.kolang',
+    explanation: 'عملگر لوله (|>) خروجی یک مرحله را به ورودی مرحلهٔ بعد می‌دهد. این کار خواندن زنجیرهٔ توابع را آسان می‌کند — مثل لولهٔ آب که داده را جریان می‌دهد.',
+    action: 'عدد ۵ را تغییر دهید یا یک مرحلهٔ لوله اضافه کنید.',
+    code: 'تعریف دو‌برابر(x):\n    x × ۲ برگردان\n\nتعریف یکی‌اضافه(x):\n    x + ۱ برگردان\n\n۵ |> دو‌برابر |> یکی‌اضافه |> بنویس',
+  },
+  {
+    title: '۱۱. درک فهرست',
+    filename: 'comprehensions.kolang',
+    explanation: 'درک فهرست راهی کوتاه برای ساختن فهرست‌های جدید از فهرست‌های موجود است. الگو: [عبارت برای متغیر در منبع اگر شرط]. مانند ریاضی: «مربع اعداد زوج».',
+    action: 'بازه(۱۰) را به بازه(۲۰) تغییر دهید و اجرا کنید.',
+    code: 'مربع‌ها = [ای * ۲ برای ای در بازه(۱۰)]\nمربع‌ها بنویس\n\nزوج‌ها = [ای برای ای در بازه(۱۰) اگر ای % ۲ == ۰ باشد]\nزوج‌ها بنویس',
+  },
+  {
+    title: '۱۲. کلاس‌ها',
+    filename: 'classes.kolang',
+    explanation: 'کلاس (گونه) قالبی برای ساخت شیء است. با «گونه نام:» تعریف می‌شود. تابع «ساخت» سازنده است و هنگام ساختن شیء فراخوانی می‌شود. «خود» به خود شیء اشاره دارد (مثل self در پایتون).',
+    action: 'یک سگ دیگر با نام متفاوت بسازید و صدادهی کنید.',
+    code: 'گونه حیوان:\n    ساخت(خود و نام):\n        نامِ خود = نام\n    تعریف صدادهی(خود):\n        «صدای حیوان» بنویس\n\nس = حیوان(«رکس»)\nصدادهیِ() س\nنامِ س بنویس',
+  },
+  {
+    title: '۱۳. وراثت',
+    filename: 'inheritance.kolang',
+    explanation: 'وراثت به یک کلاس اجازه می‌دهد از کلاس دیگر خصوصیات و رفتارها را به ارث ببرد. با «وارث» مشخص می‌شود. کلاس فرزند می‌تواند متدهای والد را با «والدِ خود» صدا بزند.',
+    action: 'یک گونهٔ گربه وارث حیوان اضافه کنید و صدادهی کنید.',
+    code: 'گونه حیوان:\n    ساخت(خود و نام):\n        نامِ خود = نام\n    تعریف صدادهی(خود):\n        «صدای حیوان» بنویس\n    تعریف معرفی(خود):\n        «من یک حیوان به نام » + نامِ خود بنویس\n\nگونه سگ وارث حیوان:\n    تعریف صدادهی(خود):\n        «واف واف» بنویس\n    تعریف معرفی(خود):\n        صدادهیِ() والدِ خود\n        «من یک سگ هستم به نام » + نامِ خود بنویس\n\nرکس = سگ(«رکس»)\nصدادهیِ() رکس\nمعرفیِ() رکس',
+  },
+  {
+    title: '۱۴. رابط‌ها',
+    filename: 'interfaces.kolang',
+    explanation: 'رابط (interface) مانند قراردادی است که می‌گوید یک شیء باید چه متدهایی داشته باشد. هر کلاسی که آن متدها را داشته باشد، خودبه‌خود رابط را پیاده می‌کند (بدون اعلان صریح). این کار کد را انعطاف‌پذیر می‌کند.',
+    action: 'یک گونهٔ سگ با همان متدها اضافه کنید و معرفی کنید.',
+    code: 'رابط حیوان:\n    تعریف صدادهی(خود)\n    تعریف نام(خود) -> متن\n\nگونه گربه:\n    ساخت(خود و نام):\n        نامِ خود = نام\n    تعریف صدادهی(خود):\n        «میو» بنویس\n    تعریف نام(خود) -> متن:\n        نامِ خود برگردان\n\nتعریف معرفی(ح: حیوان):\n    صدادهیِ() ح\n    «نام: » + نامِ() ح بنویس\n\nپشمک = گربه(«پشمک»)\nمعرفی(پشمک)',
+  },
+  {
+    title: '۱۵. استثناها',
+    filename: 'exceptions.kolang',
+    explanation: 'استثنا برای مدیریت خطاهاست. «بپا:» بخشی که ممکن است خطا دهد را در بر می‌گیرد. «بگیر:» خطا را می‌گیرد و مدیریت می‌کند. «درنهایت:» همیشه اجرا می‌شود. «بده» یک استثنا پرتاب می‌کند.',
+    action: 'خطای‌مقدار را به خطای‌نوع تغییر دهید و اجرا کنید.',
+    code: 'بپا:\n    «قبل از خطا» بنویس\n    خطای‌مقدار(«یک مشکل!») بده\n    «این چاپ نمی‌شود» بنویس\nخطای‌مقدار بگیر بانام err:\n    «خطا گرفته شد:» بنویس\n    پیامِ err بنویس\nدرنهایت:\n    «درنهایت اجرا شد» بنویس',
+  },
+  {
+    title: '۱۶. کانال‌ها',
+    filename: 'channels.kolang',
+    explanation: 'کانال برای ارتباط بین تارک‌ها (goroutines) است که کارها را همزمان انجام می‌دهند. «برو» یک تابع را در پس‌زمینه اجرا می‌کند. «<<» مقدار را به کانال می‌فرستد و «>>» می‌گیرد.',
+    action: 'تعداد اعداد تولیدشده را از ۵ به ۸ تغییر دهید و اجرا کنید.',
+    code: 'تعریف تولیدکننده(ch):\n    برای ای از ۰ تا ۵:\n        ch << ای\n    ch ببند\n\nتعریف مصرف‌کننده(ch):\n    تاوقتی درست باشد:\n        مقدار = >>ch\n        اگر بسته‌استِ ch == درست باشد:\n            اتمام\n        مقدار بنویس\n\nch = کانال(صحیح و ۲)\nبرو تولیدکننده(ch)\nبرو مصرف‌کننده(ch)',
+  },
+  {
+    title: '۱۷. جنریتورها',
+    filename: 'generators.kolang',
+    explanation: 'جنریتور تابعی است که مقدارها را یکی‌یکی تولید می‌کند (با «بساز») به‌جای همه را یک‌جا. این کار حافظه را ذخیره می‌کند و برای دنباله‌های بزرگ یا بی‌نهایت عالی است.',
+    action: 'تعداد شمارش را از ۵ به ۱۰ تغییر دهید و اجرا کنید.',
+    code: 'تعریف شمارش(ن):\n    برای ای از ۰ تا ن:\n        ای بساز\n\nبرای ای در شمارش(۵):\n    ای بنویس',
+  },
+  {
+    title: '۱۸. پوشش‌ها',
+    filename: 'decorators.kolang',
+    explanation: 'پوشش (decorator) تابع را درون لایه‌ای از رفتار اضافی می‌پیچد. با «پوشش نام» بالای تعریف تابع استفاده می‌شود. مفید برای اضافه کردن قابلیت‌هایی مثل زمان‌سنجی یا تکرار بدون تغییر خود تابع.',
+    action: 'تعداد تکرار را از ۳ به ۵ تغییر دهید و اجرا کنید.',
+    code: 'تعریف تکرار(تعداد):\n    تعریف تزیین(ف):\n        تعریف درونی():\n            برای ای از ۰ تا تعداد:\n                ف()\n        درونی برگردان\n    تزیین برگردان\n\nپوشش تکرار(۳)\nتعریف سلام():\n    «سلام!» بنویس\n\nسلام()',
+  },
+  {
+    title: '۱۹. پروژهٔ نهایی',
+    filename: 'final-project.kolang',
+    explanation: 'این پروژه چند مفهوم را ترکیب می‌کند: کلاس، شرط، حلقه، و تابع. یک دفترچهٔ تلفن ساده است که مخاطب اضافه می‌کند و جستجو می‌کند. این پایه‌ای است برای پروژه‌های بزرگ‌تر.',
+    action: 'یک مخاطب جدید اضافه کنید و سپس نام او را جستجو کنید.',
+    code: 'گونه مخاطب:\n    ساخت(خود و نام و شماره):\n        نامِ خود = نام\n        شمارهِ خود = شماره\n    تعریف نمایش(خود):\n        نامِ خود + «: » + شمارهِ خود بنویس\n\nدفترچه = []\n\nتعریف افزودن(نام و شماره):\n    فرد = مخاطب(نام و شماره)\n    فرد  به دفترچه بیافزا\n\nتعریف جستجو(نام):\n    برای فرد در دفترچه:\n        اگر نامِ فرد == نام باشد:\n            نمایشِ() فرد\n            برگردان\n    «پیدا نشد» بنویس\n\nافزودن(«علی» و «۰۹۱۲۳۴۵۶۷۸۹»)\nافزودن(«سارا» و «۰۹۸۷۶۵۴۳۲۱۰»)\nجستجو(«علی»)\nجستجو(«سارا»)',
   },
 ]
 
@@ -221,6 +313,9 @@ async function boot() {
           ...completionKeymap,
           indentWithTab,
           { key: 'Mod-Enter', run: () => { runKolangNow(); return true } },
+          { key: 'Shift-Enter', run: () => { runKolangNow(); return true } },
+          { key: 'Ctrl-ArrowLeft', run: () => { prevSection(); return true } },
+          { key: 'Ctrl-ArrowRight', run: () => { nextSection(); return true } },
         ]),
         EditorView.updateListener.of((update) => {
           if (update.docChanged) {
@@ -245,16 +340,45 @@ async function boot() {
   const runBtn = document.getElementById('run-btn')
   if (runBtn) runBtn.addEventListener('click', () => runKolangNow())
 
-  // ─── باز کردن و ذخیره فایل ───────────────────────────────────────────────
+  // ─── باز کردن، ذخیره، و فایل جدید ────────────────────────────────────────
   // از API مرورگر (FileReader و Blob download) استفاده می‌شود که هم در
   // WebView ری‌اکت‌نیتیو و هم در مرورگر معمولی (GitHub Pages) کار می‌کند.
 
   let currentFilename = 'برنامه.kolang'
+  const tabNameEl = document.getElementById('tab-name')
 
   // اطمینان از وجود پسوند .kolang
   function ensureKolangExtension(name) {
     if (!name) return 'برنامه.kolang'
     return name.endsWith('.kolang') ? name : name + '.kolang'
+  }
+
+  function updateTabName() {
+    if (tabNameEl) tabNameEl.textContent = currentFilename
+  }
+
+  // فایل جدید: 📄 ویرایشگر را خالی می‌کند و نام را به پیش‌فرض برمی‌گرداند
+  const newBtn = document.getElementById('new-btn')
+  if (newBtn) {
+    newBtn.addEventListener('click', () => {
+      if (editor) {
+        editor.dispatch({ changes: { from: 0, to: editor.state.doc.length, insert: '' } })
+      }
+      currentFilename = 'برنامه.kolang'
+      updateTabName()
+      post({ type: 'file', action: 'new', filename: currentFilename })
+    })
+  }
+
+  // کلیک روی نام تب → تغییر نام با prompt
+  if (tabNameEl) {
+    tabNameEl.addEventListener('click', () => {
+      const newName = prompt('نام فایل جدید:', currentFilename)
+      if (newName && newName.trim()) {
+        currentFilename = ensureKolangExtension(newName.trim())
+        updateTabName()
+      }
+    })
   }
 
   // باز کردن فایل: دکمهٔ 📂 ورودی مخفی file-input را فعال می‌کند
@@ -273,11 +397,11 @@ async function boot() {
           })
         }
         currentFilename = ensureKolangExtension(file.name)
+        updateTabName()
         post({ type: 'file', action: 'open', filename: currentFilename })
       } catch (err) {
         post({ type: 'error', detail: String((err && err.message) || err) })
       }
-      // ریست مقدار ورودی تا انتخاب همان فایل دوباره trigger شود
       fileInput.value = ''
     })
   }
@@ -296,7 +420,6 @@ async function boot() {
       document.body.appendChild(a)
       a.click()
       document.body.removeChild(a)
-      // آزاد کردن URL پس از مدت کوتاه
       setTimeout(() => URL.revokeObjectURL(url), 1000)
       post({ type: 'file', action: 'save', filename: a.download })
     })
@@ -314,6 +437,9 @@ async function boot() {
   const sidebarToggleBtn = document.getElementById('sidebar-toggle-btn')
   const sidebarCloseBtn = document.getElementById('sidebar-close')
   const helpListEl = document.getElementById('help-list')
+  const prevBtn = document.getElementById('prev-btn')
+  const nextBtn = document.getElementById('next-btn')
+  const navProgressEl = document.getElementById('nav-progress')
 
   let sidebarOpen = false
   let activeSectionIndex = -1
@@ -323,8 +449,6 @@ async function boot() {
   }
 
   function updatePanelMargin() {
-    // عرض پنل را به‌صورت متغیر CSS تنظیم می‌کند تا ویرایشگر و خروجی
-    // به اندازهٔ آن به چپ هل شوند (push، نه overlay).
     const w = sidebarOpen ? getPanelWidth() : 0
     document.documentElement.style.setProperty('--panel-w', w + 'px')
   }
@@ -360,23 +484,44 @@ async function boot() {
   }
   applySidebarState()
 
-  // ─── ساخت بخش‌های راهنما ─────────────────────────────────────────────────
+  // ─── ناوبری بین بخش‌ها ───────────────────────────────────────────────────
   function loadSection(index) {
     if (index < 0 || index >= HELP_SECTIONS.length) return
     const section = HELP_SECTIONS[index]
-    // بارگذاری کد در ویرایشگر
     if (editor) {
       editor.dispatch({
         changes: { from: 0, to: editor.state.doc.length, insert: section.code },
       })
     }
-    // به‌روزرسانی نام فایل
     currentFilename = section.filename
-    // برجسته‌سازی بخش فعال و باز کردن آن
+    updateTabName()
     activeSectionIndex = index
     renderHelpSections()
+    updateNavButtons()
   }
 
+  function prevSection() {
+    if (activeSectionIndex > 0) loadSection(activeSectionIndex - 1)
+  }
+
+  function nextSection() {
+    if (activeSectionIndex < HELP_SECTIONS.length - 1) loadSection(activeSectionIndex + 1)
+  }
+
+  function updateNavButtons() {
+    if (prevBtn) prevBtn.disabled = activeSectionIndex <= 0
+    if (nextBtn) nextBtn.disabled = activeSectionIndex >= HELP_SECTIONS.length - 1
+    if (navProgressEl) {
+      const persianNum = (activeSectionIndex + 1).toLocaleString('fa-IR')
+      const totalNum = HELP_SECTIONS.length.toLocaleString('fa-IR')
+      navProgressEl.textContent = 'گام ' + persianNum + ' از ' + totalNum
+    }
+  }
+
+  if (prevBtn) prevBtn.addEventListener('click', prevSection)
+  if (nextBtn) nextBtn.addEventListener('click', nextSection)
+
+  // ─── ساخت بخش‌های راهنما ─────────────────────────────────────────────────
   function renderHelpSections() {
     if (!helpListEl) return
     helpListEl.innerHTML = ''
@@ -390,7 +535,6 @@ async function boot() {
       title.innerHTML = '<span>' + section.title + '</span><span class="help-section-chevron">▸</span>'
       title.addEventListener('click', () => {
         loadSection(index)
-        // روی گوشی، پنل باز بماند تا کاربر توضیح را بخواند
         if (!sidebarOpen) openSidebar()
       })
       sec.appendChild(title)
@@ -409,28 +553,6 @@ async function boot() {
         act.textContent = '🎯 ' + section.action
         body.appendChild(act)
 
-        const nav = document.createElement('div')
-        nav.className = 'help-nav'
-        const prevBtn = document.createElement('button')
-        prevBtn.className = 'help-nav-btn'
-        prevBtn.textContent = '← قبلی'
-        prevBtn.disabled = index === 0
-        prevBtn.addEventListener('click', (e) => { e.stopPropagation(); loadSection(index - 1) })
-        nav.appendChild(prevBtn)
-
-        const progress = document.createElement('span')
-        progress.className = 'help-progress'
-        progress.textContent = 'گام ' + (index + 1) + ' از ' + HELP_SECTIONS.length
-        nav.appendChild(progress)
-
-        const nextBtn = document.createElement('button')
-        nextBtn.className = 'help-nav-btn'
-        nextBtn.textContent = 'بعدی →'
-        nextBtn.disabled = index === HELP_SECTIONS.length - 1
-        nextBtn.addEventListener('click', (e) => { e.stopPropagation(); loadSection(index + 1) })
-        nav.appendChild(nextBtn)
-
-        body.appendChild(nav)
         sec.appendChild(body)
       }
 
@@ -438,7 +560,7 @@ async function boot() {
     })
   }
 
-  // بارگذاری بخش اول به‌صورت پیش‌فرض (کد آن در ویرایشگر قرار می‌گیرد)
+  // بارگذاری بخش اول به‌صورت پیش‌فرض
   loadSection(0)
 
   // جمع‌شدنی: خروجی
@@ -450,10 +572,7 @@ async function boot() {
     })
   }
 
-  // واکنش به تغییر اندازهٔ پنجره:
-  // - تبلت ← گوشی: پنل بسته شود
-  // - گوشی ← تبلت: پنل باز شود
-  // - همیشه margin به‌روز شود (عرض پنل ممکن است با media query تغییر کند)
+  // واکنش به تغییر اندازهٔ پنجره
   window.addEventListener('resize', () => {
     if (isTablet()) {
       if (!sidebarOpen) {
@@ -466,7 +585,6 @@ async function boot() {
         applySidebarState()
       }
     }
-    // عرض پنل با media query تغییر می‌کند — margin را به‌روز کن
     updatePanelMargin()
   })
 }
