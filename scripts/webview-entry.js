@@ -110,32 +110,52 @@ const kolangHighlight = HighlightStyle.define([
   { tag: tags.meta, color: '#f5c2e7' },
 ])
 
-// ─── مثال‌ها ──────────────────────────────────────────────────────────────
+// ─── بخش‌های راهنمای تعاملی ───────────────────────────────────────────────
+// هر بخش یک مفهوم کلنگ را آموزش می‌دهد: توضیح در پنل راست، کد در ویرایشگر.
+// کاربر با کمترین تغییر (اجرا، ویرایش یک کلمه) مفهوم را یاد می‌گیرد.
 
-const EXAMPLES = [
+const HELP_SECTIONS = [
   {
-    label: 'سلام دنیا',
+    title: '۱. سلام دنیا',
+    filename: 'hello.kolang',
+    explanation: 'تابع «بنویس» متن را در خروجی چاپ می‌کند. متن‌ها در کلنگ با گیومهٔ فرانسوی «» نوشته می‌شوند.',
+    action: 'دکمهٔ ▶ اجرا را بزنید تا «سلام دنیا!» چاپ شود.',
     code: '«سلام دنیا!» بنویس',
   },
   {
-    label: 'محاسبه',
-    code: 'نتیجه = ۵ + ۳\n«نتیجه» بنویس',
+    title: '۲. متغیرها',
+    filename: 'variables.kolang',
+    explanation: 'برای ذخیرهٔ یک مقدار در یک نام، از = استفاده کنید. سپس می‌توانید از آن نام در جاهای دیگر کد بهره ببرید. علامت + رشته‌ها را به هم می‌چسباند.',
+    action: 'نام «رامین» را به نام خودتان تغییر دهید و اجرا کنید.',
+    code: 'نام = «رامین»\n«سلام » + نام بنویس',
   },
   {
-    label: 'حلقه',
-    code: 'برای ای از ۰ تا ۵:\n    «ای» بنویس',
+    title: '۳. محاسبات',
+    filename: 'calculations.kolang',
+    explanation: 'کلنگ از عملیات ریاضی پشتیبانی می‌کند: + ، - ، × (ضرب) ، ÷ (تقسیم). متغیرها می‌توانند اعداد را هم ذخیره کنند.',
+    action: 'اعداد ۱۰ یا ۵ را تغییر دهید و نتیجه را ببینید.',
+    code: 'طول = ۱۰\nعرض = ۵\nمساحت = طول × عرض\n«مساحت: » + مساحت بنویس',
   },
   {
-    label: 'شرط',
+    title: '۴. شرط‌ها',
+    filename: 'conditionals.kolang',
+    explanation: 'با «اگر ... باشد:» می‌توان بر اساس یک شرط تصمیم گرفت. بخش «وگرنه:» زمانی اجرا می‌شود که شرط برقرار نباشد. بلوک‌ها با فاصله (تورفتگی) مشخص می‌شوند — مانند پایتون.',
+    action: 'عدد ۲۰ را به ۱۵ تغییر دهید و اجرا کنید تا «کودک» چاپ شود.',
     code: 'سن = ۲۰\nاگر سن >= ۱۸ باشد:\n    «بزرگسال» بنویس\nوگرنه:\n    «کودک» بنویس',
   },
   {
-    label: 'تابع',
-    code: 'تعریف سلام(نام):\n    «سلام » + نام بنویس\n\nسلام(«رامین»)',
+    title: '۵. حلقه‌ها',
+    filename: 'loops.kolang',
+    explanation: 'با «برای ای از A تا B:» می‌توان روی اعداد پشت سر هم کار کرد. متغیر حلقه در هر تکرار مقدار بعدی را می‌گیرد.',
+    action: 'عدد ۵ را به ۱۰ تغییر دهید و اجرا کنید.',
+    code: 'برای ای از ۱ تا ۵:\n    «شماره: » + ای بنویس',
   },
   {
-    label: 'فیبوناچی',
-    code: 'تعریف فیبوناچی(ن):\n    اگر ن <= ۱ باشد:\n        ن برگردان\n    فیبوناچی(ن - ۱) + فیبوناچی(ن - ۲) برگردان\n\nبرای ای از ۰ تا ۱۰:\n    فیبوناچی(ای) بنویس',
+    title: '۶. توابع',
+    filename: 'functions.kolang',
+    explanation: 'با «تعریف نام(پارامتر):» می‌توان یک تابع ساخت و آن را چند بار با ورودی‌های متفاوت صدا زد. بدنهٔ تابع با تورفتگی مشخص می‌شود.',
+    action: 'یک فراخوانی سوم اضافه کنید: سلام(«نام شما») و اجرا کنید.',
+    code: 'تعریف سلام(نام):\n    «سلام » + نام بنویس\n\nسلام(«رامین»)\nسلام(«دنیا»)',
   },
 ]
 
@@ -172,16 +192,6 @@ async function runKolangNow(code) {
 
 // پل اجرا — React Native از طریق injectJavaScript این را صدا می‌زند
 window.runKolang = runKolangNow
-
-// پل بارگذاری مثال — React Native از طریق injectJavaScript این را صدا می‌زند
-window.loadExample = function (code) {
-  if (editor && typeof code === 'string') {
-    editor.dispatch({
-      changes: { from: 0, to: editor.state.doc.length, insert: code },
-    })
-    post({ type: 'code', text: code })
-  }
-}
 
 // ─── راه‌اندازی ویرایشگر ───────────────────────────────────────────────────
 
@@ -239,7 +249,13 @@ async function boot() {
   // از API مرورگر (FileReader و Blob download) استفاده می‌شود که هم در
   // WebView ری‌اکت‌نیتیو و هم در مرورگر معمولی (GitHub Pages) کار می‌کند.
 
-  let currentFilename = 'untitled.kolang'
+  let currentFilename = 'برنامه.kolang'
+
+  // اطمینان از وجود پسوند .kolang
+  function ensureKolangExtension(name) {
+    if (!name) return 'برنامه.kolang'
+    return name.endsWith('.kolang') ? name : name + '.kolang'
+  }
 
   // باز کردن فایل: دکمهٔ 📂 ورودی مخفی file-input را فعال می‌کند
   const openBtn = document.getElementById('open-btn')
@@ -256,7 +272,7 @@ async function boot() {
             changes: { from: 0, to: editor.state.doc.length, insert: content },
           })
         }
-        currentFilename = file.name || 'untitled.kolang'
+        currentFilename = ensureKolangExtension(file.name)
         post({ type: 'file', action: 'open', filename: currentFilename })
       } catch (err) {
         post({ type: 'error', detail: String((err && err.message) || err) })
@@ -276,42 +292,48 @@ async function boot() {
       const url = URL.createObjectURL(blob)
       const a = document.createElement('a')
       a.href = url
-      a.download = currentFilename
+      a.download = ensureKolangExtension(currentFilename)
       document.body.appendChild(a)
       a.click()
       document.body.removeChild(a)
       // آزاد کردن URL پس از مدت کوتاه
       setTimeout(() => URL.revokeObjectURL(url), 1000)
-      post({ type: 'file', action: 'save', filename: currentFilename })
+      post({ type: 'file', action: 'save', filename: a.download })
     })
   }
 
-  // ─── نوار کناری مثال‌ها ─────────────────────────────────────────────────
-  // نوار کناری روی تبلت (min-width:768px) به‌صورت پیش‌فرض پین‌شده باز می‌شود.
-  // روی گوشی به‌صورت پیش‌فرض بسته است و با ☰ به‌صورت overlay باز می‌شود.
-
-  const sidebarEl = document.getElementById('sidebar')
-  const overlayEl = document.getElementById('sidebar-overlay')
-  const sidebarToggleBtn = document.getElementById('sidebar-toggle-btn')
-  const sidebarCloseBtn = document.getElementById('sidebar-close')
-  const examplesListEl = document.getElementById('examples-list')
-
-  let sidebarOpen = false
-  let sidebarPinned = false
-  let activeExampleIndex = -1
+  // ─── پنل راهنما (راست، push—not overlay) ─────────────────────────────────
+  // پنل از سمت راست باز می‌شود و ویرایشگر/خروجی را به چپ هل می‌دهد.
+  // روی تبلت به‌صورت پیش‌فرض باز است؛ روی گوشی بسته است.
 
   function isTablet() {
     return window.matchMedia('(min-width: 768px)').matches
   }
 
+  const sidebarEl = document.getElementById('sidebar')
+  const sidebarToggleBtn = document.getElementById('sidebar-toggle-btn')
+  const sidebarCloseBtn = document.getElementById('sidebar-close')
+  const helpListEl = document.getElementById('help-list')
+
+  let sidebarOpen = false
+  let activeSectionIndex = -1
+
+  function getPanelWidth() {
+    return sidebarEl ? sidebarEl.offsetWidth : 0
+  }
+
+  function updatePanelMargin() {
+    // عرض پنل را به‌صورت متغیر CSS تنظیم می‌کند تا ویرایشگر و خروجی
+    // به اندازهٔ آن به چپ هل شوند (push، نه overlay).
+    const w = sidebarOpen ? getPanelWidth() : 0
+    document.documentElement.style.setProperty('--panel-w', w + 'px')
+  }
+
   function applySidebarState() {
-    if (!sidebarEl || !overlayEl) return
-    const showSidebar = sidebarOpen || sidebarPinned
-    sidebarEl.classList.toggle('open', showSidebar)
-    sidebarEl.classList.toggle('pinned', sidebarPinned)
-    overlayEl.classList.toggle('visible', sidebarOpen && !sidebarPinned)
-    document.body.classList.toggle('sidebar-pinned', sidebarPinned)
-    document.body.classList.toggle('sidebar-open', sidebarOpen && !sidebarPinned)
+    if (!sidebarEl) return
+    sidebarEl.classList.toggle('open', sidebarOpen)
+    document.body.classList.toggle('sidebar-open', sidebarOpen)
+    updatePanelMargin()
   }
 
   function openSidebar() {
@@ -320,69 +342,104 @@ async function boot() {
   }
 
   function closeSidebar() {
-    if (sidebarPinned) {
-      sidebarPinned = false
-      sidebarOpen = false
-    } else {
-      sidebarOpen = false
-    }
+    sidebarOpen = false
     applySidebarState()
   }
 
   function toggleSidebar() {
-    if (sidebarOpen || sidebarPinned) {
-      closeSidebar()
-    } else {
-      openSidebar()
-    }
+    if (sidebarOpen) closeSidebar()
+    else openSidebar()
   }
 
-  function handleToggleClick() {
-    if (isTablet()) {
-      if (sidebarPinned) {
-        sidebarPinned = false
-        sidebarOpen = false
-      } else {
-        sidebarPinned = true
-        sidebarOpen = false
-      }
-      applySidebarState()
-    } else {
-      toggleSidebar()
-    }
-  }
-
-  if (sidebarToggleBtn) sidebarToggleBtn.addEventListener('click', handleToggleClick)
+  if (sidebarToggleBtn) sidebarToggleBtn.addEventListener('click', toggleSidebar)
   if (sidebarCloseBtn) sidebarCloseBtn.addEventListener('click', closeSidebar)
-  if (overlayEl) overlayEl.addEventListener('click', closeSidebar)
 
-  // ─── حالت اولیه بر اساس عرض صفحه ───────────────────────────────────────
-  // روی تبلت (≥۷۶۸px) نوار کناری به‌صورت پیش‌فرض پین‌شده باز می‌شود.
-  // این باید پس از بارگذاری اولیه DOM انجام شود تا کلاس‌های CSS اعمال شوند.
+  // ─── حالت اولیه: روی تبلت پنل باز است ───────────────────────────────────
   if (isTablet()) {
-    sidebarPinned = true
+    sidebarOpen = true
   }
   applySidebarState()
 
-  // ساخت ردیف‌های مثال داخل نوار کناری
-  if (examplesListEl) {
-    EXAMPLES.forEach((ex, index) => {
-      const item = document.createElement('div')
-      item.className = 'example-item'
-      item.textContent = ex.label
-      item.dataset.index = String(index)
-      item.addEventListener('click', () => {
-        // بارگذاری مثال و بستن نوار (روی گوشی). روی تبلتِ پین‌شده نوار باز می‌ماند.
-        window.loadExample(ex.code)
-        activeExampleIndex = index
-        // برجسته‌سازی ردیف فعال
-        examplesListEl.querySelectorAll('.example-item').forEach((el) => el.classList.remove('active'))
-        item.classList.add('active')
-        if (!sidebarPinned) closeSidebar()
+  // ─── ساخت بخش‌های راهنما ─────────────────────────────────────────────────
+  function loadSection(index) {
+    if (index < 0 || index >= HELP_SECTIONS.length) return
+    const section = HELP_SECTIONS[index]
+    // بارگذاری کد در ویرایشگر
+    if (editor) {
+      editor.dispatch({
+        changes: { from: 0, to: editor.state.doc.length, insert: section.code },
       })
-      examplesListEl.appendChild(item)
+    }
+    // به‌روزرسانی نام فایل
+    currentFilename = section.filename
+    // برجسته‌سازی بخش فعال و باز کردن آن
+    activeSectionIndex = index
+    renderHelpSections()
+  }
+
+  function renderHelpSections() {
+    if (!helpListEl) return
+    helpListEl.innerHTML = ''
+    HELP_SECTIONS.forEach((section, index) => {
+      const isActive = index === activeSectionIndex
+      const sec = document.createElement('div')
+      sec.className = 'help-section' + (isActive ? ' active' : '')
+
+      const title = document.createElement('div')
+      title.className = 'help-section-title'
+      title.innerHTML = '<span>' + section.title + '</span><span class="help-section-chevron">▸</span>'
+      title.addEventListener('click', () => {
+        loadSection(index)
+        // روی گوشی، پنل باز بماند تا کاربر توضیح را بخواند
+        if (!sidebarOpen) openSidebar()
+      })
+      sec.appendChild(title)
+
+      if (isActive) {
+        const body = document.createElement('div')
+        body.className = 'help-section-body'
+
+        const expl = document.createElement('div')
+        expl.className = 'help-explanation'
+        expl.textContent = section.explanation
+        body.appendChild(expl)
+
+        const act = document.createElement('div')
+        act.className = 'help-action'
+        act.textContent = '🎯 ' + section.action
+        body.appendChild(act)
+
+        const nav = document.createElement('div')
+        nav.className = 'help-nav'
+        const prevBtn = document.createElement('button')
+        prevBtn.className = 'help-nav-btn'
+        prevBtn.textContent = '← قبلی'
+        prevBtn.disabled = index === 0
+        prevBtn.addEventListener('click', (e) => { e.stopPropagation(); loadSection(index - 1) })
+        nav.appendChild(prevBtn)
+
+        const progress = document.createElement('span')
+        progress.className = 'help-progress'
+        progress.textContent = 'گام ' + (index + 1) + ' از ' + HELP_SECTIONS.length
+        nav.appendChild(progress)
+
+        const nextBtn = document.createElement('button')
+        nextBtn.className = 'help-nav-btn'
+        nextBtn.textContent = 'بعدی →'
+        nextBtn.disabled = index === HELP_SECTIONS.length - 1
+        nextBtn.addEventListener('click', (e) => { e.stopPropagation(); loadSection(index + 1) })
+        nav.appendChild(nextBtn)
+
+        body.appendChild(nav)
+        sec.appendChild(body)
+      }
+
+      helpListEl.appendChild(sec)
     })
   }
+
+  // بارگذاری بخش اول به‌صورت پیش‌فرض (کد آن در ویرایشگر قرار می‌گیرد)
+  loadSection(0)
 
   // جمع‌شدنی: خروجی
   const outputHeader = document.getElementById('output-header')
@@ -393,31 +450,24 @@ async function boot() {
     })
   }
 
-  // جمع‌شدنی: آموزش (داخل نوار کناری)
-  const tutorialHeader = document.getElementById('tutorial-header')
-  const tutorialBody = document.getElementById('tutorial-body')
-  if (tutorialHeader && tutorialBody) {
-    tutorialHeader.addEventListener('click', () => {
-      tutorialBody.classList.toggle('open')
-    })
-  }
-
-  // واکنش به تغییر اندازهٔ پنجره (چرخش گوشی/تبلت):
-  // - تبلت ← گوشی: پین برداشته شود، نوار بسته شود
-  // - گوشی ← تبلت: نوار به‌صورت پین‌شده باز شود
+  // واکنش به تغییر اندازهٔ پنجره:
+  // - تبلت ← گوشی: پنل بسته شود
+  // - گوشی ← تبلت: پنل باز شود
+  // - همیشه margin به‌روز شود (عرض پنل ممکن است با media query تغییر کند)
   window.addEventListener('resize', () => {
     if (isTablet()) {
-      if (!sidebarPinned && !sidebarOpen) {
-        sidebarPinned = true
+      if (!sidebarOpen) {
+        sidebarOpen = true
         applySidebarState()
       }
     } else {
-      if (sidebarPinned) {
-        sidebarPinned = false
+      if (sidebarOpen) {
         sidebarOpen = false
         applySidebarState()
       }
     }
+    // عرض پنل با media query تغییر می‌کند — margin را به‌روز کن
+    updatePanelMargin()
   })
 }
 

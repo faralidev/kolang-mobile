@@ -48,41 +48,35 @@ function buildEditorHTML(bundleJS) {
   .btn-run{background:#a6e3a1;color:#1e1e2e}
   .btn-run:active{opacity:0.8}
 
-  /* ─── overlay (روی گوشی) ─── */
-  #sidebar-overlay{
-    position:fixed;inset:0;
-    background:rgba(0,0,0,0.5);
-    opacity:0;pointer-events:none;
-    transition:opacity 0.25s ease;
-    z-index:90;
-  }
-  #sidebar-overlay.visible{opacity:1;pointer-events:auto}
-
-  /* ─── نوار کناری مثال‌ها ─── */
+  /* ─── پنل راهنما (راست، push—not overlay) ─── */
+  /* پنل از سمت راست باز می‌شود و محتوای اصلی را به چپ هل می‌دهد. */
   #sidebar{
-    position:fixed;top:0;bottom:0;left:0;
-    width:280px;
+    position:fixed;top:0;bottom:0;right:0;
+    width:min(280px,70vw);
     background:#181825;
-    border-right:1px solid #313244;
-    transform:translateX(-100%);
+    border-left:1px solid #313244;
+    transform:translateX(100%);
     transition:transform 0.25s ease;
     z-index:100;
     display:flex;flex-direction:column;
     overflow:hidden;
+    box-shadow:-2px 0 12px rgba(0,0,0,0.3);
   }
   #sidebar.open{transform:translateX(0)}
 
-  /* روی تبلتِ پین‌شده: نوار فضا می‌گیرد، ویرایشگر کوچک می‌شود */
   @media (min-width:768px){
     #sidebar{width:320px}
-    #sidebar.pinned{
-      transform:translateX(0);
-      position:fixed;
-      box-shadow:2px 0 12px rgba(0,0,0,0.3);
-    }
-    body.sidebar-pinned #editor{margin-left:320px}
-    body.sidebar-pinned #output-panel{margin-left:320px}
   }
+
+  /* وقتی پنل باز است، ویرایشگر و خروجی به اندازهٔ عرض پنل به چپ هل می‌شوند.
+     این روی همهٔ اندازه‌های صفحه اعمال می‌شود (push، نه overlay). */
+  body.sidebar-open #editor,
+  body.sidebar-pinned #editor{margin-right:var(--panel-w)}
+  body.sidebar-open #output-panel,
+  body.sidebar-pinned #output-panel{margin-right:var(--panel-w)}
+
+  /* متغیر عرض پنل — به‌صورت پویا توسط JS تنظیم می‌شود */
+  :root{--panel-w:0px}
 
   .sidebar-header{
     display:flex;align-items:center;justify-content:space-between;
@@ -99,58 +93,56 @@ function buildEditorHTML(bundleJS) {
   }
   .sidebar-close:active{background:#313244}
 
-  /* ردیف‌های مثال */
-  #examples-list{
+  /* ─── فهرست بخش‌های راهنما ─── */
+  #help-list{
     flex:1;overflow-y:auto;
     -webkit-overflow-scrolling:touch;
   }
-  .example-item{
-    padding:12px 16px;
-    color:#cdd6f4;font-size:14px;
-    border-bottom:1px solid #313244;
+  .help-section{border-bottom:1px solid #313244}
+  .help-section-title{
+    padding:14px 16px;
+    color:#cdd6f4;font-size:14px;font-weight:600;
     cursor:pointer;
-    min-height:44px;display:flex;align-items:center;
-    border-left:3px solid transparent;
+    min-height:44px;display:flex;align-items:center;gap:8px;
+    border-right:3px solid transparent;
     transition:background 0.15s;
   }
-  .example-item:active{background:#313244}
-  .example-item.active{
+  .help-section-title:active{background:#313244}
+  .help-section.active .help-section-title{
     background:#313244;
-    border-left-color:#cba6f7;
+    border-right-color:#cba6f7;
     color:#cba6f7;
   }
+  .help-section-chevron{color:#585b70;font-size:11px;transition:transform 0.2s;margin-right:auto}
+  .help-section.active .help-section-chevron{transform:rotate(90deg)}
+  .help-section-body{display:none;padding:8px 16px 14px}
+  .help-section.active .help-section-body{display:block}
 
-  /* آموزش داخل نوار کناری */
-  #tutorial{
-    border-top:1px solid #313244;
-    flex-shrink:0;
+  .help-explanation{
+    color:#bac2de;font-size:13px;line-height:1.7;
+    margin-bottom:12px;
   }
-  #tutorial-header{
-    display:flex;align-items:center;justify-content:space-between;
-    padding:10px 16px;cursor:pointer;
+  .help-action{
+    background:#313244;border-radius:8px;padding:8px 12px;
+    color:#fab387;font-size:12px;line-height:1.5;
+    margin-bottom:12px;
   }
-  .tutorial-title{color:#a6adc8;font-size:13px;font-weight:600}
-  .tutorial-chevron{color:#585b70;font-size:12px;transition:transform 0.2s}
-  #tutorial-body{
-    display:none;padding:4px 16px 12px;
-    max-height:40vh;overflow-y:auto;
+  .help-nav{display:flex;gap:8px;align-items:center}
+  .help-nav-btn{
+    background:#45475a;color:#cdd6f4;border:none;
+    border-radius:8px;padding:8px 14px;
+    font-family:inherit;font-size:12px;font-weight:600;
+    cursor:pointer;min-height:36px;
   }
-  #tutorial-body.open{display:block}
-  .tutorial-step{
-    display:flex;gap:10px;padding:7px 0;
-    color:#bac2de;font-size:12px;line-height:1.6;
-    border-bottom:1px solid #31324430;
-  }
-  .tutorial-step:last-child{border-bottom:none}
-  .tutorial-num{
-    flex-shrink:0;width:22px;height:22px;border-radius:50%;
-    background:#313244;color:#cba6f7;
-    display:flex;align-items:center;justify-content:center;
-    font-size:11px;font-weight:700;
-  }
+  .help-nav-btn:active{background:#585b70}
+  .help-nav-btn:disabled{opacity:0.4;cursor:default}
+  .help-progress{color:#a6adc8;font-size:11px;flex:1;text-align:center}
 
   /* ─── ویرایشگر ─── */
-  #editor{flex:1;min-height:0;overflow:hidden;transition:margin-left 0.25s ease}
+  #editor{
+    flex:1;min-height:0;overflow:hidden;
+    transition:margin-right 0.25s ease;
+  }
   .cm-editor{height:100%;font-size:15px}
   .cm-editor.cm-focused{outline:none}
 
@@ -158,7 +150,7 @@ function buildEditorHTML(bundleJS) {
   #output-panel{
     flex-shrink:0;background:#181825;
     border-top:1px solid #313244;
-    max-height:45vh;transition:max-height 0.2s ease,margin-left 0.25s ease;
+    max-height:45vh;transition:max-height 0.2s ease,margin-right 0.25s ease;
     display:flex;flex-direction:column;
   }
   #output-panel.collapsed{max-height:44px}
@@ -185,37 +177,20 @@ function buildEditorHTML(bundleJS) {
 
   <!-- نوار بالا -->
   <div class="topbar">
-    <button id="sidebar-toggle-btn" class="topbar-btn btn-menu" title="مثال‌ها">☰</button>
     <span class="topbar-title">ویرایشگر کلنگ</span>
     <button id="open-btn" class="topbar-btn btn-file" title="باز کردن فایل">📂</button>
     <button id="save-btn" class="topbar-btn btn-file" title="ذخیره فایل">💾</button>
     <button id="run-btn" class="topbar-btn btn-run">▶ اجرا</button>
+    <button id="sidebar-toggle-btn" class="topbar-btn btn-menu" title="راهنما">☰</button>
   </div>
 
-  <!-- overlay نوار کناری -->
-  <div id="sidebar-overlay"></div>
-
-  <!-- نوار کناری مثال‌ها + آموزش -->
+  <!-- پنل راهنما (راست) -->
   <div id="sidebar">
     <div class="sidebar-header">
-      <span class="sidebar-title">مثال‌ها</span>
+      <span class="sidebar-title">راهنما</span>
       <button id="sidebar-close" class="sidebar-close">✕</button>
     </div>
-    <div id="examples-list"></div>
-    <div id="tutorial">
-      <div id="tutorial-header">
-        <span class="tutorial-title">📚 آموزش</span>
-        <span class="tutorial-chevron">▾</span>
-      </div>
-      <div id="tutorial-body">
-        <div class="tutorial-step"><span class="tutorial-num">۱</span><span>کد را در ویرایشگر بنویسید یا ویرایش کنید.</span></div>
-        <div class="tutorial-step"><span class="tutorial-num">۲</span><span>دکمهٔ ▶ اجرا را بزنید (یا Cmd+Enter).</span></div>
-        <div class="tutorial-step"><span class="tutorial-num">۳</span><span>خروجی برنامه در پایین نمایش داده می‌شود.</span></div>
-        <div class="tutorial-step"><span class="tutorial-num">۴</span><span>از نوار کناری مثال‌ها را برای یادگیری باز کنید.</span></div>
-        <div class="tutorial-step"><span class="tutorial-num">۵</span><span>برای جمع‌کردن خروجی، روی عنوان آن ضربه بزنید.</span></div>
-        <div class="tutorial-step"><span class="tutorial-num">۶</span><span>برای باز کردن فایل از دکمهٔ 📂 و برای ذخیره از 💾 استفاده کنید.</span></div>
-      </div>
-    </div>
+    <div id="help-list"></div>
   </div>
 
   <!-- ورودی مخفی فایل (برای باز کردن) -->
