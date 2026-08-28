@@ -27,7 +27,16 @@
     "@react-native/metro-config": "^0.76.0",
     "@react-native/eslint-config": "^0.76.0",
     "eslint": "^9.0.0",
-    "esbuild": "^0.25.0"
+    "esbuild": "^0.25.0",
+    "codemirror": "^6.0.0",
+    "@codemirror/view": "^6.34.0",
+    "@codemirror/state": "^6.4.0",
+    "@codemirror/commands": "^6.6.0",
+    "@codemirror/language": "^6.10.0",
+    "@codemirror/autocomplete": "^6.18.0",
+    "@codemirror/search": "^6.5.0",
+    "@codemirror/lint": "^6.8.0",
+    "@lezer/highlight": "^1.2.0"
   },
   "license": "MIT",
   "repository": "https://github.com/faralidev/kolang-mobile",
