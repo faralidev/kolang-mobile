@@ -11,3 +11,5 @@ ios/Pods/
 ios/build/
 *.jsbundle
 build/
+# Lockfile — not tracked (reproducible installs via npm install)
+package-lock.json
