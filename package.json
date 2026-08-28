@@ -19,7 +19,7 @@
     "react-native": "^0.76.0",
     "react-native-webview": "^13.12.0",
     "@kolang/interpreter": "^0.1.1",
-    "@kolang/grammar": "file:../kolang-grammar"
+    "@kolang/grammar": "^0.1.2"
   },
   "devDependencies": {
     "@babel/core": "^7.25.0",
