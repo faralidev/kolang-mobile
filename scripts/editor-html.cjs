@@ -169,9 +169,8 @@ function buildEditorHTML(bundleJS) {
   }
   .nav-toggle-btn:active{background:var(--surface1)}
   .nav-controls{
-    display:none;align-items:center;gap:6px;
+    display:flex;align-items:center;gap:6px;
   }
-  .sidebar-nav.show-nav .nav-controls{display:flex}
   .nav-btn{
     background:var(--surface1);color:var(--text);border:none;
     border-radius:8px;padding:6px 10px;
@@ -196,11 +195,32 @@ function buildEditorHTML(bundleJS) {
     #sidebar .sidebar-close{display:none}
   }
 
-  /* ─── فهرست بخش‌های راهنما ─── */
+  /* ─── بخش راهنمای فعلی (همیشهvisible) ─── */
+  #help-current{
+    flex-shrink:0;
+    padding:14px 16px;
+    border-bottom:1px solid var(--surface0);
+  }
+  #help-current .help-current-title{
+    color:var(--mauve);font-size:15px;font-weight:700;
+    margin-bottom:10px;
+  }
+  #help-current .help-explanation{
+    color:var(--subtext1);font-size:13px;line-height:1.7;
+    margin-bottom:10px;
+  }
+  #help-current .help-action{
+    background:var(--surface0);border-radius:8px;padding:8px 12px;
+    color:var(--peach);font-size:12px;line-height:1.5;
+  }
+
+  /* ─── فهرست بخش‌ها (پیش‌فرضhidden، با ⇄ نمایش داده می‌شود) ─── */
   #help-list{
     flex:1;overflow-y:auto;
     -webkit-overflow-scrolling:touch;
+    display:none;
   }
+  #sidebar.show-list #help-list{display:block}
   .help-section{border-bottom:1px solid var(--surface0)}
   .help-section-title{
     padding:14px 16px;
@@ -288,14 +308,13 @@ function buildEditorHTML(bundleJS) {
   <div id="sidebar">
     <div class="sidebar-nav">
       <span class="sidebar-nav-title">راهنما</span>
-      <button id="nav-toggle" class="nav-toggle-btn" title="نمایش ناوبری">⇄</button>
-      <div class="nav-controls">
-        <button id="prev-btn" class="nav-btn" title="قبلی (Ctrl+→)">→ قبلی</button>
-        <span id="nav-progress" class="nav-progress">گام ۱ از ۱۹</span>
-        <button id="next-btn" class="nav-btn" title="بعدی (Ctrl+←)">بعدی ←</button>
-      </div>
+      <button id="nav-toggle" class="nav-toggle-btn" title="نمایش فهرست مراحل">⇄</button>
+      <button id="prev-btn" class="nav-btn" title="قبلی (Ctrl+→)">→ قبلی</button>
+      <span id="nav-progress" class="nav-progress">گام ۱ از ۱۹</span>
+      <button id="next-btn" class="nav-btn" title="بعدی (Ctrl+←)">بعدی ←</button>
       <button id="sidebar-close" class="sidebar-close">✕</button>
     </div>
+    <div id="help-current"></div>
     <div id="help-list"></div>
   </div>
 

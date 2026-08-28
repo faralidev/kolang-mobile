@@ -710,6 +710,7 @@ async function boot() {
       renderTabs()
     }
     activeSectionIndex = index
+    renderHelpCurrent()
     renderHelpSections()
     updateNavButtons()
   }
@@ -735,16 +736,39 @@ async function boot() {
   if (prevBtn) prevBtn.addEventListener('click', prevSection)
   if (nextBtn) nextBtn.addEventListener('click', nextSection)
 
-  // دکمهٔ toggle ناوبری (Task 1): ناوبری قبلی/بعدی به‌صورت پیش‌فرض مخفی است
+  // دکمهٔ toggle: نمایش/پنهان‌کردن فهرست مراحل (نه دکمه‌های ناوبری)
   const navToggle = document.getElementById('nav-toggle')
-  const sidebarNav = sidebarEl ? sidebarEl.querySelector('.sidebar-nav') : null
-  if (navToggle && sidebarNav) {
+  if (navToggle && sidebarEl) {
     navToggle.addEventListener('click', () => {
-      sidebarNav.classList.toggle('show-nav')
+      sidebarEl.classList.toggle('show-list')
     })
   }
 
-  // ─── ساخت بخش‌های راهنما ─────────────────────────────────────────────────
+  // ─── ساخت محتوای بخش فعلی (همیشهvisible) ─────────────────────────────────
+  function renderHelpCurrent() {
+    const el = document.getElementById('help-current')
+    if (!el) return
+    el.innerHTML = ''
+    const section = HELP_SECTIONS[activeSectionIndex]
+    if (!section) return
+
+    const title = document.createElement('div')
+    title.className = 'help-current-title'
+    title.textContent = section.title
+    el.appendChild(title)
+
+    const expl = document.createElement('div')
+    expl.className = 'help-explanation'
+    expl.textContent = section.explanation
+    el.appendChild(expl)
+
+    const act = document.createElement('div')
+    act.className = 'help-action'
+    act.textContent = '🎯 ' + section.action
+    el.appendChild(act)
+  }
+
+  // ─── ساخت فهرست بخش‌ها (پنهان به‌صورت پیش‌فرض) ─────────────────────────────
   function renderHelpSections() {
     if (!helpListEl) return
     helpListEl.innerHTML = ''
@@ -825,19 +849,19 @@ async function boot() {
       return false
     }
 
-    // بخش قبلی: Ctrl/Cmd+ArrowLeft
+    // بخش بعدی: Ctrl/Cmd+ArrowLeft (در RTL، جلو = چپ)
     if (isMod && (e.key === 'ArrowLeft' || e.key === 'Left')) {
       e.preventDefault()
       e.stopPropagation()
-      prevSection()
+      nextSection()
       return false
     }
 
-    // بخش بعدی: Ctrl/Cmd+ArrowRight
+    // بخش قبلی: Ctrl/Cmd+ArrowRight (در RTL، عقب = راست)
     if (isMod && (e.key === 'ArrowRight' || e.key === 'Right')) {
       e.preventDefault()
       e.stopPropagation()
-      nextSection()
+      prevSection()
       return false
     }
   }, true) // ← capture phase
